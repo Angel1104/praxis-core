@@ -77,15 +77,37 @@ Run one of these before anything else. You only need to re-run when the architec
 
 ## Gates and rigor
 
-Every CR has a **rigor level** set at intake:
+Every CR has a **rigor level**. You almost never need to set it manually —
+`/intake` reads what you describe and decides automatically:
 
-| Rigor | What it means |
-|-------|--------------|
-| `fast` | Lean or no spec. Skips straight to build for fix/refactor. Lean spec for features. |
-| `standard` | Default. Full spec for features/security, lean spec for fix/refactor. |
-| `full` | Full spec + plan + build + review for everything, regardless of type. |
+| What you describe | How intake classifies it | Pipeline assigned |
+|-------------------|--------------------------|-------------------|
+| "the button is broken", "this crashes when…" | `fix`, Normal | lean spec → build → review → close |
+| "add a new feature", "I want users to be able to…" | `feature`, Normal | full spec → plan → build → review → close |
+| "refactor this module", "clean up the auth code" | `refactor`, Normal | lean spec → build → review → close |
+| "security vulnerability in…", "user can access other accounts" | `security`, High | full spec → plan → build → review → close |
+| "production is down", "critical error in…" | `incident`, Critical | containment → build → review → close |
 
-Set rigor at intake: `/intake --rigor fast fix the login bug`
+**You only need `--rigor` when you want to override what intake would decide:**
+
+| Flag | When to use it |
+|------|---------------|
+| `--rigor fast` | Intake would assign a full spec but you know the change is small. Forces lean or no spec, goes straight to build. |
+| `--rigor full` | Intake would assign a lean pipeline but you want maximum rigour — all sections, full plan, full review. |
+| `--rigor standard` | Explicit default. Same as not passing anything. |
+
+**Example:**
+```
+/intake "add a contact modal"
+```
+→ Intake classifies as `feature`, assigns full spec. Fine for a real feature.
+
+```
+/intake --rigor fast "add a contact modal"
+```
+→ Same classification, but you're telling intake: "I know this is small, skip the spec."
+
+**Rule of thumb:** don't pass `--rigor` at all. Let intake decide. Only override when you disagree with what it would choose.
 
 ---
 
@@ -174,7 +196,7 @@ Each skill checks the state before running and tells you if something is out of 
 Run `/init` (new project) or `/setup` (existing project). Then `/intake <describe your first change>`.
 
 **"What if I just want to fix a small bug quickly?"**
-`/intake --rigor fast fix the bug in X` — this skips the spec and goes straight to build.
+Just describe it: `/intake fix the bug in X` — intake will classify it as a `fix` and assign a lean pipeline automatically. Only add `--rigor fast` if intake would classify it as something heavier (like a feature) but you know it's actually trivial.
 
 **"Can I skip planning and just build?"**
 Yes: set `plan=off` in `SDM Gates`, or use `--rigor fast` on the CR. `/plan` will skip automatically.
