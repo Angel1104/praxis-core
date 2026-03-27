@@ -37,7 +37,11 @@ Before doing anything, read your bundled references:
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found. Run `/intake` first."
-4. Check CR state is `OPEN`. If:
+4. Read `CLAUDE.md` — check `SDM Gates:`. If `spec=off`:
+   > "Spec gate is disabled for this project (`SDM Gates: spec=off` in `CLAUDE.md`).
+   > Set CR state to `SPEC_APPROVED` and proceed with `/plan [cr-id]`."
+   Update CR state to `SPEC_APPROVED`. Stop.
+5. Check CR state is `OPEN`. If:
    - `SPEC_DRAFT` or `SPEC_REVIEWED` → continue from current state
    - `SPEC_APPROVED` → "Spec already approved. Run `/plan [cr-id]`."
    - `PLAN_READY` or later → "This CR is past the spec stage."
@@ -54,16 +58,21 @@ Before doing anything, read your bundled references:
 ## Phase 1: Context Loading (silent)
 
 1. Read the full CR item — type, severity, track, rigor, intent, assessment, decisions already made
-2. Read `ARCHITECTURE.md` if it exists — use this as the project context instead of scanning `src/`
-   - If `ARCHITECTURE.md` does not exist: scan `src/domain/models/`, `src/domain/ports/`, and existing patterns as needed
-3. Scan `specs/cr/` for related or dependent specs
-4. If `specs/lessons-learned.md` exists, read it and surface any entries relevant to this CR
+2. Read `CLAUDE.md` — check `SDM Domain:` and `SDM Gates:` lines
+3. Read `ARCHITECTURE.md` if it exists — use this as the project context instead of scanning `src/`
+   - If `ARCHITECTURE.md` does not exist: scan the main source directory for related patterns as needed
+4. Scan `specs/cr/` for related or dependent specs
+5. If `specs/lessons-learned.md` exists, read it and surface any entries relevant to this CR
+
+**Domain routing:**
+- If `SDM Domain: software` (or absent) → proceed to Phase 2 (Technical Spec)
+- If `SDM Domain: content | research | strategy | general` → proceed to Phase 2B (Plan Brief)
 
 Decide proportionality: see `references/spec-quality-rules.md` proportionality table.
 
 ---
 
-## Phase 2: Draft the Spec
+## Phase 2: Draft the Spec (software domain)
 
 Update CR state to `SPEC_DRAFT`.
 
@@ -77,6 +86,71 @@ Annotation conventions:
 Apply all technical defaults (async FastAPI, Pydantic v2, SQLAlchemy, tenant_uid on all repository methods, JWT RS256, etc.) without asking.
 
 For sections not applicable to this CR type: write `N/A — [one-sentence justification]`.
+
+---
+
+## Phase 2B: Plan Brief (non-software domains)
+
+*Only for `SDM Domain: content | research | strategy | general`.*
+
+Instead of a technical spec, produce a **Plan Brief** — a focused artifact that answers
+8 questions about the work before execution begins.
+
+Create `specs/cr/<cr-id>.spec.md` with this structure:
+
+```markdown
+# Plan Brief — CR-[cr-id]
+Status: DRAFT | APPROVED
+Date: [date]
+
+## 1. Problem
+What is the actual problem we're solving? (Not the solution — the problem.)
+[One paragraph. Challenge vague answers — "we need a document" is a solution, not a problem.]
+
+## 2. Goal
+What does success look like when this is done?
+[Concrete, observable outcome.]
+
+## 3. Audience
+Who is this for? What do they need from it?
+[Specific — not "stakeholders" but who exactly and what they need to do with the output.]
+
+## 4. Appetite
+How much effort is this worth? What is the time/effort budget?
+[Fixed budget: e.g. "2 hours", "one week", "one iteration". Not an estimate — a constraint.]
+
+## 5. Acceptance Criteria
+How will we know this is done and good enough?
+[3-5 specific, verifiable criteria. Each must be checkable without subjective judgment.]
+
+## 6. Constraints
+What must we work within? What is explicitly out of scope?
+[Hard limits: tools, formats, word counts, regulations, existing materials to reuse or avoid.]
+
+## 7. Core Assumption
+What is the single most important assumption this plan rests on?
+[The thing that, if wrong, would invalidate the whole approach.]
+
+## 8. Rabbit Holes to Avoid
+What could pull us off track? What are we explicitly NOT doing?
+[Known scope creep risks, tangents to decline, related work to defer.]
+```
+
+**Quality gate — challenge weak answers:**
+- "We need to update the docs" → ask: "What happens if we don't? Who is blocked and how?"
+- "Make it better" → ask: "Better how, measurable how, for whom?"
+- Appetite left blank → ask: "How much time is this worth? Name a number."
+- Acceptance criteria that are subjective → rewrite as verifiable checks
+
+Run three review perspectives (same as Phase 4 for software):
+1. **Clarity** — Is the problem real and specific? Are ACs verifiable?
+2. **Feasibility** — Is the appetite realistic given the scope?
+3. **Completeness** — Are rabbit holes named? Is the core assumption explicit?
+
+Resolve all blockers. Approve when clean.
+
+Update CR state to `SPEC_APPROVED`. Skip Phase 3 (contract impact is software-only).
+Proceed to Phase 6 (handoff).
 
 ---
 

@@ -150,7 +150,29 @@ Wait for confirmation. Adjust if needed. Set `platform` from confirmed choice.
 
 ---
 
-## Step 5: Write CLAUDE.md
+## Step 5: Ask domain and gates
+
+Ask these two questions, one at a time:
+
+> **Q — Domain:** "What kind of work will happen in this project primarily?
+> - `software` — code, APIs, infrastructure, deployment
+> - `content` — documents, writing, editing, marketing
+> - `research` — investigation, analysis, literature review
+> - `strategy` — decisions, planning, roadmaps
+> - `general` — mixed or doesn't fit above
+> (default: software)"
+
+> **Q — Gates:** "Which lifecycle gates do you want active?
+> All are on by default. Reply with any you want to disable:
+> - `spec` — write a specification before planning
+> - `plan` — produce an implementation plan before building
+> - `review` — post-build code/output review
+> - `lessons` — capture lessons learned at close
+> (e.g. 'disable plan' or 'all on')"
+
+---
+
+## Step 6: Write CLAUDE.md
 
 Append to `CLAUDE.md` (create if missing):
 
@@ -158,11 +180,15 @@ Append to `CLAUDE.md` (create if missing):
 ## SDM Configuration
 
 SDM Platform: <platform>
+SDM Domain: <software|content|research|strategy|general>
+SDM Gates: spec=on, plan=on, review=on, lessons=on
 ```
+
+Adjust `SDM Gates` based on the developer's answer.
 
 ---
 
-## Step 6: Write ARCHITECTURE.md blueprint
+## Step 7: Write ARCHITECTURE.md blueprint
 
 Write `ARCHITECTURE.md` at the project root. Mark all sections as planned — this
 is a blueprint, not a snapshot of existing code.
@@ -224,7 +250,7 @@ is a blueprint, not a snapshot of existing code.
 
 ---
 
-## Step 7: Install the enforce-spec-first hook
+## Step 8: Install the enforce-spec-first hook
 
 1. Check if `.git/` exists at project root. If not, skip silently.
 2. Check if `.git/hooks/pre-commit` already exists.
@@ -276,11 +302,13 @@ process.exit(0);
 
 ---
 
-## Step 8: Confirm
+## Step 9: Confirm
 
-> **SDM initialised for `[platform]` — [Tiny | Medium | Large] project.**
+> **SDM initialised — [platform] — [Tiny | Medium | Large] project.**
 >
 > - Platform recorded in `CLAUDE.md`
+> - Domain: `[domain]`
+> - Gates: `[active gate list]`
 > - Architecture blueprint written to `ARCHITECTURE.md`
 >   - [N] planned domains documented
 >   - [N] external integrations planned
@@ -288,8 +316,8 @@ process.exit(0);
 > - Spec-first hook installed at `.git/hooks/pre-commit`
 >
 > `ARCHITECTURE.md` is a blueprint — update it as code is written and structure
-> becomes real. Re-run `/setup --[platform]` once the codebase has significant code
-> to get a scan-based snapshot.
+> becomes real. Re-run `/setup` once the codebase has significant code to get a
+> scan-based snapshot.
 >
 > Next step: `/intake <describe the first feature to build>`
 

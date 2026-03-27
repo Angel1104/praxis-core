@@ -35,7 +35,8 @@ Before doing anything, read your bundled references:
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found."
-4. Check CR state is `REVIEWING`. If not:
+4. Read `CLAUDE.md` — check `SDM Gates:`. If `review=off`, accept state `IMPLEMENTING` as valid for closure (review was skipped by gate config).
+5. Check CR state is `REVIEWING`. If not:
    - Earlier state → "Review not complete. Run `/review [cr-id]` first."
    - `CLOSED` → "This CR is already closed."
 5. Verify the review report in the CR item has verdict `PASS`. If `BLOCKED`:
@@ -62,6 +63,8 @@ If any AC is not met: do not proceed to Phase 4. Present the gap to the develope
 
 ## Phase 2: Lessons Learned (silent)
 
+Read `CLAUDE.md` — if `SDM Gates: lessons=off`, skip this phase entirely.
+
 Apply the quality gate from `references/lessons-learned-rules.md`:
 - Keep if the lesson is non-obvious to a competent engineer in this domain, or likely to recur.
 - Discard if it is generic good practice or quickly findable in documentation.
@@ -73,6 +76,28 @@ For each lesson that passes:
 If any lesson looks like a missing process rule rather than a knowledge item, surface it to the human:
 > "This may warrant a doctrine update — consider `/intake` if you agree."
 Do NOT modify doctrine or create CRs autonomously.
+
+---
+
+## Phase 2B: Feed-Forward (silent)
+
+Write a feed-forward block to `specs/feed-forward.md` (create if it doesn't exist).
+This file persists across CRs and is read by `/intake` at the start of each new CR.
+
+Append a new entry:
+
+```markdown
+## FF-[cr-id] — [one-line CR summary] ([date])
+
+**New problems revealed:** [problems this CR uncovered that we didn't set out to solve]
+**Deferred scope:** [things intentionally cut from this CR that still need doing]
+**Wrong assumptions:** [assumptions from the spec that turned out to be false]
+**Open questions:** [unresolved questions that future CRs should answer]
+**What to watch:** [risks or fragile areas exposed by this implementation]
+```
+
+Only write sections that have real content — omit empty ones.
+If nothing worth noting: write `FF-[cr-id] — no feed-forward items.`
 
 ---
 

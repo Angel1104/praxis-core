@@ -110,7 +110,29 @@ Ask questions one at a time and wait for each answer.
 
 ---
 
-## Step 4: Write CLAUDE.md
+## Step 4: Ask domain and gates
+
+Ask these two questions, one at a time:
+
+> **Q — Domain:** "What kind of work happens in this project primarily?
+> - `software` — code, APIs, infrastructure, deployment
+> - `content` — documents, writing, editing, marketing
+> - `research` — investigation, analysis, literature review
+> - `strategy` — decisions, planning, roadmaps
+> - `general` — mixed or doesn't fit above
+> (default: software)"
+
+> **Q — Gates:** "Which lifecycle gates do you want active?
+> All are on by default. Reply with any you want to disable:
+> - `spec` — write a specification before planning
+> - `plan` — produce an implementation plan before building
+> - `review` — post-build code/output review
+> - `lessons` — capture lessons learned at close
+> (e.g. 'disable plan' or 'disable spec and review' — or 'all on')"
+
+---
+
+## Step 5: Write CLAUDE.md
 
 **If no existing `SDM Platform:` line:** append to `CLAUDE.md` (create if missing):
 
@@ -118,13 +140,18 @@ Ask questions one at a time and wait for each answer.
 ## SDM Configuration
 
 SDM Platform: <detected stack>
+SDM Domain: <software|content|research|strategy|general>
+SDM Gates: spec=on, plan=on, review=on, lessons=on
 ```
 
-**If replacing:** edit the `SDM Platform:` line in-place.
+Adjust `SDM Gates` based on the developer's answer. Example if they disabled plan:
+`SDM Gates: spec=on, plan=off, review=on, lessons=on`
+
+**If replacing existing lines:** edit each line in-place.
 
 ---
 
-## Step 5: Write ARCHITECTURE.md
+## Step 6: Write ARCHITECTURE.md
 
 Write `ARCHITECTURE.md` at the project root.
 
@@ -178,7 +205,7 @@ Write `ARCHITECTURE.md` at the project root.
 
 ---
 
-## Step 6: Install the enforce-spec-first hook
+## Step 7: Install the enforce-spec-first hook
 
 1. Check if `.git/` exists at project root. If not, skip silently.
 2. Check if `.git/hooks/pre-commit` already exists.
@@ -230,19 +257,21 @@ process.exit(0);
 
 ---
 
-## Step 7: Confirm
+## Step 8: Confirm
 
 > **SDM configured — [stack] — [Tiny | Medium | Large] project.**
 >
 > - Stack recorded in `CLAUDE.md`
+> - Domain: `[domain]`
+> - Gates: `[active gate list]`
 > - Architecture snapshot written to `ARCHITECTURE.md`
 >   - [N] feature areas documented
 >   - [N] external integrations noted
 >   - [N] complexity hotspots captured
 > - Spec-first hook installed at `.git/hooks/pre-commit`
 >
-> All lifecycle skills will read `ARCHITECTURE.md` instead of re-scanning.
-> Re-run `/setup` when the architecture changes significantly.
+> All lifecycle skills will read `CLAUDE.md` and `ARCHITECTURE.md` instead of re-scanning.
+> Re-run `/setup` when the architecture or gate configuration changes.
 >
 > Next step: `/intake <describe your first change request>`
 

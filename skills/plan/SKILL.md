@@ -44,7 +44,12 @@ Before doing anything, read your bundled references:
 2. Read the CR item at `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found for [cr-id]. Run `/intake` first."
 
-3. Check CR state is `SPEC_APPROVED`. If not:
+3. Read `CLAUDE.md` — check `SDM Gates:`. If `plan=off`:
+   > "Plan gate is disabled for this project (`SDM Gates: plan=off` in `CLAUDE.md`).
+   > Set CR state to `PLAN_READY` and proceed with `/build [cr-id]`."
+   Update CR state to `PLAN_READY`. Stop.
+
+4. Check CR state is `SPEC_APPROVED`. If not:
    - `OPEN` or `SPEC_DRAFT` → "Spec not yet approved. Complete `/spec [cr-id]` first."
    - `PLAN_READY` → "Plan already exists for this CR. Check `specs/cr/plans/<cr-id>.plan.md`."
    - `IMPLEMENTING` or later → "This CR is already past the planning stage."

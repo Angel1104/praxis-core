@@ -39,11 +39,15 @@ Before doing anything, read your bundled references:
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found."
-4. Check CR state is `IMPLEMENTING`. If not:
+4. Read `CLAUDE.md` — check `SDM Gates:`. If `review=off`:
+   > "Review gate is disabled for this project (`SDM Gates: review=off` in `CLAUDE.md`).
+   > Set CR state to `REVIEWING` with auto-PASS verdict and proceed with `/close [cr-id]`."
+   Update CR state to `REVIEWING`. Append to CR item: `Review: PASS (gate disabled)`. Stop.
+5. Check CR state is `IMPLEMENTING`. If not:
    - Earlier state → "Build not complete. Run `/build [cr-id]` first."
    - `REVIEWING` → "Review already in progress or complete. Check the CR item."
    - `CLOSED` → "This CR is already closed."
-5. Locate `specs/cr/plans/<cr-id>.plan.md` and `specs/cr/<cr-id>.spec.md` — both required for review context.
+6. Locate `specs/cr/plans/<cr-id>.plan.md` and `specs/cr/<cr-id>.spec.md` — both required for review context. If plan is missing (plan gate was disabled), read spec only.
 
 ---
 
