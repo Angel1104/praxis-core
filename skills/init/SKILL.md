@@ -105,16 +105,21 @@ Ask questions one at a time and wait for each answer.
 
 Based on the answers, recommend platform and architecture.
 
-**Platform selection guide:**
+**Platform selection guide (examples — not exhaustive):**
 
 | Signal | Recommendation |
 |--------|---------------|
-| Python team, hexagonal arch, complex domain logic, many integrations | `python-fastapi` |
-| TypeScript team, NestJS preferred, enterprise patterns, Prisma | `nestjs` |
-| Web frontend, React, Next.js App Router, server components | `nextjs` |
-| Mobile app, iOS + Android, Dart team | `flutter` |
-| Full-stack: backend API + web frontend | `nestjs` + `nextjs` (two separate setups) |
-| Full-stack: backend API + mobile | `python-fastapi` or `nestjs` + `flutter` |
+| Python team, complex domain logic, many integrations | `python-fastapi` or `django` |
+| TypeScript team, enterprise patterns, relational DB | `nestjs` |
+| Web frontend, React, server-side rendering | `nextjs` |
+| Mobile app, iOS + Android | `flutter` or `react-native` |
+| High concurrency, systems programming | `go` or `rust` |
+| Rapid prototyping, convention over config | `rails` or `laravel` |
+| JVM ecosystem, existing Java/Kotlin team | `spring-boot` |
+| Full-stack | pick backend + pick frontend (two separate `/init` runs) |
+
+Use whatever fits the team, constraints, and use case. The SDM lifecycle works
+with any stack.
 
 **Architecture complexity guide:**
 

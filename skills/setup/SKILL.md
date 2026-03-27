@@ -2,13 +2,14 @@
 name: setup
 description: >
   Configures the SDM skills pack for an existing project. Scans the codebase,
-  detects project size, asks proportional questions, and writes ARCHITECTURE.md
-  so all lifecycle skills have full context without re-scanning on every CR.
-  Usage: /setup --python | --flutter | --nestjs | --nextjs
-  Also use when: "configure this project", "set the platform", "update architecture snapshot".
+  detects the stack and project size automatically, asks proportional questions,
+  and writes ARCHITECTURE.md so all lifecycle skills have full context without
+  re-scanning on every CR. Works with any language, framework, or project type.
+  Usage: /setup
+  Also use when: "configure this project", "update architecture snapshot".
   For new projects with no code yet, use /init instead.
   Do NOT use for: greenfield projects, anything other than existing project setup.
-argument-hint: --python | --flutter | --nestjs | --nextjs
+argument-hint: (no arguments needed)
 ---
 
 # Setup — Existing Project
@@ -16,32 +17,16 @@ argument-hint: --python | --flutter | --nestjs | --nextjs
 **Role: Project Configurator**
 **Use on projects that already have code. For new projects, use `/init`.**
 
-Scans the codebase once, asks proportional questions based on project size, and
-writes `CLAUDE.md` + `ARCHITECTURE.md`. All lifecycle skills read these files
-instead of re-scanning on every CR.
+Scans the codebase once, detects the stack automatically, asks proportional
+questions based on project size, and writes `CLAUDE.md` + `ARCHITECTURE.md`.
+All lifecycle skills read these files instead of re-scanning on every CR.
+
+Works with any language or framework — Python, TypeScript, Go, Rust, Flutter,
+Rails, Django, or anything else.
 
 ---
 
-## Step 1: Read arguments
-
-Extract the platform flag from `$ARGUMENTS`:
-
-| Flag | Platform |
-|------|----------|
-| `--python` | `python-fastapi` |
-| `--flutter` | `flutter` |
-| `--nestjs` | `nestjs` |
-| `--nextjs` | `nextjs` |
-
-If no flag or unrecognised flag:
-> "Usage: `/setup --python` | `--flutter` | `--nestjs` | `--nextjs`
-> For a new project with no code yet, use `/init`."
-
-Stop.
-
----
-
-## Step 2: Check for existing SDM configuration
+## Step 1: Check for existing SDM configuration
 
 Read `CLAUDE.md` if it exists. Search for `SDM Platform:`.
 
@@ -53,19 +38,31 @@ Wait. If no, stop.
 
 ---
 
-## Step 3: Silent scan
+## Step 2: Silent scan
 
 Scan silently — no output during this step.
 
-**For `python-fastapi`:** read directory tree 3 levels of `app/`, `src/` + `tests/` structure + `pyproject.toml` or `requirements*.txt`
+Look for any of these to understand the project type:
+- `pyproject.toml`, `requirements*.txt`, `setup.py` → Python
+- `package.json` → Node.js (check for `next`, `nest`, `express`, `fastify`, etc.)
+- `pubspec.yaml` → Flutter/Dart
+- `go.mod` → Go
+- `Cargo.toml` → Rust
+- `Gemfile` → Ruby/Rails
+- `build.gradle`, `pom.xml` → Java/Kotlin
+- Any other manifest → detect from contents
 
-**For `nestjs`:** read directory tree 3 levels of `src/` + `test/` structure + `package.json`
+Read the directory tree 3 levels deep from the root (or `src/`, `lib/`, `app/`
+whichever is the main source directory).
 
-**For `nextjs`:** read directory tree 3 levels of `src/app/`, `src/features/` + `package.json`
+Read `tests/`, `test/`, `spec/`, or equivalent test directory structure.
 
-**For `flutter`:** read directory tree 3 levels of `lib/` + `test/` structure + `pubspec.yaml`
+After scanning, determine:
 
-After scanning, classify project size:
+**Stack:** what language and framework this project uses (free text, e.g.
+`python-fastapi`, `go-gin`, `rails`, `django`, `nestjs`, `nextjs`, `flutter`)
+
+**Size:**
 
 | Size | Signal |
 |------|--------|
@@ -75,7 +72,7 @@ After scanning, classify project size:
 
 ---
 
-## Step 4: Proportional interview
+## Step 3: Proportional interview
 
 Ask questions one at a time and wait for each answer.
 
@@ -89,7 +86,7 @@ Ask questions one at a time and wait for each answer.
 > Q1: "What external services does it integrate with, and what is each used for?"
 
 > Q2: "How are environment-specific dependencies configured?
-> (e.g. env vars + Pydantic BaseSettings, NestJS ConfigModule, custom IoC container)"
+> (e.g. env vars, config files per environment, custom IoC container)"
 
 > Q3: "Any non-obvious parts — complex flows, async pipelines, dual databases,
 > custom patterns — that aren't visible from the directory structure alone?"
@@ -99,35 +96,35 @@ Ask questions one at a time and wait for each answer.
 > Q1: "List all external integrations and what each is used for."
 
 > Q2: "How is environment-specific wiring handled?
-> (e.g. YAML-driven IoC container, env vars, NestJS modules, custom assembler)"
+> (e.g. YAML-driven IoC container, env vars, custom assembler, DI framework)"
 
 > Q3: "Is this multi-tenant? If yes, how is tenant isolation enforced?
 > (RLS, app-level filtering, separate DBs, or other)"
 
 > Q4: "What are the non-obvious complexity hotspots?
-> (e.g. two-phase writes, async workers, dual DBs serving different purposes,
-> custom event buses, projection pipelines)"
+> (e.g. two-phase writes, async workers, dual DBs, custom event buses,
+> projection pipelines, state machines)"
 
-> Q5: "Are there any architectural decisions that diverge from the standard
-> `[platform]` stack? Things the SDM stack reference wouldn't predict?"
+> Q5: "Any architectural decisions that diverge from what the directory
+> structure suggests? Things a new engineer would likely get wrong?"
 
 ---
 
-## Step 5: Write CLAUDE.md
+## Step 4: Write CLAUDE.md
 
 **If no existing `SDM Platform:` line:** append to `CLAUDE.md` (create if missing):
 
 ```
 ## SDM Configuration
 
-SDM Platform: <platform>
+SDM Platform: <detected stack>
 ```
 
 **If replacing:** edit the `SDM Platform:` line in-place.
 
 ---
 
-## Step 6: Write ARCHITECTURE.md
+## Step 5: Write ARCHITECTURE.md
 
 Write `ARCHITECTURE.md` at the project root.
 
@@ -136,14 +133,14 @@ Write `ARCHITECTURE.md` at the project root.
 <!-- Generated by /setup on [date]. Re-run /setup to regenerate. -->
 <!-- All SDM lifecycle skills read this file instead of scanning the codebase. -->
 
-## Platform
-[platform]
+## Stack
+[detected stack — e.g. python-fastapi, go-gin, rails, nestjs, flutter]
 
 ## Project Size
 [Tiny | Medium | Large] — [N feature areas, N external integrations]
 
 ## Directory Structure
-[tree of src/ app/ lib/ — 3 levels deep, from scan]
+[tree of main source directory — 3 levels deep, from scan]
 
 ## Feature Areas / Domains
 [list of feature areas detected from scan]
@@ -151,28 +148,28 @@ Write `ARCHITECTURE.md` at the project root.
 
 ## External Integrations
 [from interview — each integration + what it's used for]
-[if Tiny and no integrations found: "None detected"]
+[if Tiny and none: "None detected"]
 
 ## Environment Configuration
 [from interview — how env-specific wiring works]
-[if Tiny and standard: "Standard env vars via [Pydantic BaseSettings | ConfigModule | etc.]"]
+[if Tiny and standard: "Standard env vars"]
 
 ## Multi-Tenancy
-[from interview — isolation mechanism and where tenant_uid is sourced]
+[from interview — isolation mechanism and where tenant ID is sourced]
 [if not multi-tenant: "Single tenant"]
 
 ## Established Patterns
 [patterns observed from scan:
  - naming conventions
  - base classes or mixins used consistently
- - any non-standard patterns (e.g. "repositories return dicts, never ORM objects")]
+ - any non-standard patterns observed]
 
 ## Complexity Hotspots
-[from interview Q3/Q4 — the non-obvious parts]
+[from interview — the non-obvious parts]
 [if Tiny and none: "None reported"]
 
-## Architectural Deviations from Stack Reference
-[from interview Q5 (Large only) — where this project diverges from the standard stack]
+## Architectural Notes
+[from interview Q5 (Large) — divergences, surprises, things to know]
 [if not Large or none reported: "None reported"]
 
 ## Test Structure
@@ -181,7 +178,7 @@ Write `ARCHITECTURE.md` at the project root.
 
 ---
 
-## Step 7: Install the enforce-spec-first hook
+## Step 6: Install the enforce-spec-first hook
 
 1. Check if `.git/` exists at project root. If not, skip silently.
 2. Check if `.git/hooks/pre-commit` already exists.
@@ -197,7 +194,7 @@ Write `ARCHITECTURE.md` at the project root.
 const fs = require('fs');
 const path = require('path');
 
-const PROTECTED_PATHS = ['src/domain', 'src/application', 'src/adapters', 'lib/features', 'app/'];
+const PROTECTED_PATHS = ['src/', 'lib/', 'app/'];
 const SPECS_DIR = 'specs/cr';
 
 const { execSync } = require('child_process');
@@ -233,19 +230,19 @@ process.exit(0);
 
 ---
 
-## Step 8: Confirm
+## Step 7: Confirm
 
-> **SDM configured for `[platform]` — [Tiny | Medium | Large] project.**
+> **SDM configured — [stack] — [Tiny | Medium | Large] project.**
 >
-> - Platform recorded in `CLAUDE.md`
+> - Stack recorded in `CLAUDE.md`
 > - Architecture snapshot written to `ARCHITECTURE.md`
 >   - [N] feature areas documented
 >   - [N] external integrations noted
 >   - [N] complexity hotspots captured
 > - Spec-first hook installed at `.git/hooks/pre-commit`
 >
-> All lifecycle skills will read `ARCHITECTURE.md` instead of re-scanning the codebase.
-> Re-run `/setup --[platform]` when the architecture changes significantly.
+> All lifecycle skills will read `ARCHITECTURE.md` instead of re-scanning.
+> Re-run `/setup` when the architecture changes significantly.
 >
 > Next step: `/intake <describe your first change request>`
 
@@ -253,10 +250,10 @@ process.exit(0);
 
 ## When to re-run setup
 
-Re-run `/setup --[platform]` when:
+Re-run `/setup` when:
 - A new major domain or feature area is added
 - An external integration is added or removed
-- The IoC or environment configuration strategy changes
+- The environment configuration strategy changes
 - A significant structural refactor changes the directory layout
 
 Do NOT re-run for individual CRs — `ARCHITECTURE.md` is a project-level snapshot,
