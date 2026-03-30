@@ -15,9 +15,9 @@ Every spec must contain all of the following. A section may be brief if the CR i
 | Problem statement | What is broken or missing, for whom, and why it matters. Explicit out-of-scope subsection. |
 | Bounded context | Which domain, which entities owned, which events published, which contexts depended upon |
 | Inbound ports | Every operation exposed. Auth required. Roles permitted. Read-RBAC per role. |
-| Outbound ports | Every external dependency. Method signatures with `tenant_uid: str` as first param. Bridge/Gateway flag. |
+| Outbound ports | Every external dependency. Method signatures with the project's isolation key (from `Praxis IsolationKey`) as first param if applicable. Bridge/Gateway flag. |
 | Adapter contracts | Concrete implementations: endpoints, schemas, operation ordering for multi-step commands |
-| Tenant isolation strategy | How `tenant_uid` is resolved, scoped, and validated |
+| Data isolation strategy | How the isolation key (`Praxis IsolationKey`) is resolved, scoped, and validated. Mark N/A if `Praxis IsolationKey: none`. |
 | Security defaults | Rate limit fallback policy, JWT expiry, read-RBAC summary, operation ordering — no TBD |
 | Acceptance criteria | GIVEN/WHEN/THEN format. Testable. Specific. No vague language. |
 | Error scenarios | Auth failures (5 mandatory rows). Domain errors with domain exception names, not HTTP codes. |
@@ -53,7 +53,7 @@ The following are BLOCKER conditions:
 - Any `BUSINESS DECISION REQUIRED` marker remains unfilled
 - Any acceptance criterion that cannot be verified with a deterministic test
 - Any vague language that can be interpreted more than one way
-- Tenant isolation not addressed for any data access path
+- Data isolation not addressed for any data access path (when `Praxis IsolationKey` is set)
 - Auth requirement undefined for any write endpoint
 - Error scenarios missing the 5 mandatory auth failure rows
 - Security defaults section has any blank or "TBD" field
@@ -102,7 +102,7 @@ Before declaring a spec ready for review:
 - [ ] No placeholder text (no TBD, TODO, fill in later)
 - [ ] No ambiguous language
 - [ ] All ports defined as interfaces, not implementations
-- [ ] Tenant isolation addressed for every data access path
+- [ ] Data isolation addressed for every data access path (when `Praxis IsolationKey` is set)
 - [ ] Every AC follows GIVEN/WHEN/THEN
 - [ ] Every error scenario has an explicit behavior defined
 - [ ] Side effects are domain events — not direct service calls

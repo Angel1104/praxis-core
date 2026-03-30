@@ -1,5 +1,5 @@
 ---
-name: review
+name: audit
 description: >
   Post-build review gate. Validates the completed implementation before closure.
   Use after implementation-build has completed. Accepts a CR-ID. Runs three mandatory
@@ -39,9 +39,9 @@ Before doing anything, read your bundled references:
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found."
-4. Read `CLAUDE.md` — check `SDM Gates:`. If `review=off`:
-   > "Review gate is disabled for this project (`SDM Gates: review=off` in `CLAUDE.md`).
-   > Set CR state to `REVIEWING` with auto-PASS verdict and proceed with `/close [cr-id]`."
+4. Read `CLAUDE.md` — check `Praxis Gates:`. If `review=off`:
+   > "Review gate is disabled for this project (`Praxis Gates: review=off` in `CLAUDE.md`).
+   > Set CR state to `REVIEWING` with auto-PASS verdict and proceed with `/ship [cr-id]`."
    Update CR state to `REVIEWING`. Append to CR item: `Review: PASS (gate disabled)`. Stop.
 5. Check CR state is `IMPLEMENTING`. If not:
    - Earlier state → "Build not complete. Run `/build [cr-id]` first."
@@ -121,10 +121,7 @@ Resolve all BLOCKER findings (CRITICAL and HIGH) autonomously where the fix is t
 For any BLOCKER that requires a business or scope decision:
 > "Review found a blocker I cannot resolve without input: [finding]. Options: [A / B]. Which do you prefer?"
 
-After fixes, re-run affected tests:
-```bash
-pytest tests/<cr-id>/ -v
-```
+After fixes, run `Praxis TestCommand` (from `CLAUDE.md`) to verify all tests pass.
 
 Repeat Phase 2 → Phase 4 on changed files until no BLOCKERs remain.
 
@@ -148,7 +145,7 @@ Update CR state: `IMPLEMENTING` → `REVIEWING`
 >
 > [Summary: what was reviewed, finding counts by severity, any advisories to carry forward]
 >
-> Next step: `/close [cr-id]`
+> Next step: `/ship [cr-id]`
 
 **If verdict was BLOCKED and is now resolved:**
 
@@ -156,7 +153,7 @@ Update CR state: `IMPLEMENTING` → `REVIEWING`
 >
 > Blockers resolved: [N]. Fixes applied: [brief list].
 >
-> Next step: `/close [cr-id]`
+> Next step: `/ship [cr-id]`
 
 **If a BLOCKER required human input and is now awaiting decision:**
 

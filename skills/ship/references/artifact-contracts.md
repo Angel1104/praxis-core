@@ -85,7 +85,7 @@ Required sections:
 
 Test skeletons are also produced at Plan, stored in `tests/<cr-id>/`.
 
-**AC traceability rule:** Every unit in the wave plan must link to ≥1 acceptance criterion. Units not traceable to an AC must not appear. This ensures `/review` can verify that all ACs have corresponding implementation units.
+**AC traceability rule:** Every unit in the wave plan must link to ≥1 acceptance criterion. Units not traceable to an AC must not appear. This ensures `/audit` can verify that all ACs have corresponding implementation units.
 
 ---
 

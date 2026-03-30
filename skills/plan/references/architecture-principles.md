@@ -2,7 +2,7 @@
 
 ## The central rule
 
-The domain is the centre. It knows nothing about HTTP, databases, queues, or any framework. All external interaction flows through ports and adapters.
+The domain is the centre. It knows nothing about HTTP, databases, queues, or any framework. All external interaction flows through ports/interfaces and adapters/implementations.
 
 This is not a preference. It is the invariant the entire system is built on. A violation of this rule is not a code quality issue — it is an architectural failure.
 
@@ -13,7 +13,7 @@ This is not a preference. It is the invariant the entire system is built on. A v
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     INBOUND ADAPTERS                     │
-│   FastAPI routers · Event consumers · CLI · Schedulers   │
+│   Routers · Controllers · Event consumers · CLI · Jobs   │
 ├─────────────────────────────────────────────────────────┤
 │                   APPLICATION LAYER                      │
 │          Commands (writes) · Queries (reads)             │
@@ -26,10 +26,15 @@ This is not a preference. It is the invariant the entire system is built on. A v
 └─────────────────────────────────────────────────────────┘
 ```
 
+This is the hexagonal/clean architecture view. Simpler projects may use a layered structure (controller → service → repository) — the dependency direction rule still applies: inner layers never import outer layers.
+
 ---
 
 ## Dependency direction — strict
 
+Inner layers must never depend on outer layers.
+
+**Hexagonal / Clean Architecture:**
 ```
 domain/      → NOTHING (stdlib and typing only)
 application/ → domain/ ONLY
@@ -37,95 +42,110 @@ adapters/    → domain/ + application/ + external libraries
 config/      → everything (composition root)
 ```
 
-Any file in `domain/` that imports from `adapters/` or `application/` is an architectural violation. Any file in `application/` that imports from `adapters/` is an architectural violation.
+**Layered (MVC / service-repository):**
+```
+models/      → NOTHING
+services/    → models/ ONLY
+controllers/ → services/ + models/
+config/      → everything
+```
+
+The exact directory names vary by stack — read the project's `ARCHITECTURE.md` or stack reference for the actual paths. The rule is the direction, not the names.
 
 ---
 
 ## Directory structure
 
+The exact layout depends on the language and framework. Common patterns:
+
+**Hexagonal (Python, TypeScript, Go, Kotlin):**
 ```
 src/
-├── domain/
-│   ├── models/          # Entities, Value Objects, Aggregates
-│   ├── ports/
-│   │   ├── inbound/     # Operations the outside world calls on us
-│   │   └── outbound/    # Operations we call on the outside world
-│   ├── services/        # Domain logic orchestrating entities and ports
-│   ├── events/          # Domain event definitions (frozen dataclasses)
-│   └── exceptions.py    # Domain-specific exceptions (no HTTP codes)
-│
-├── application/
-│   ├── commands/        # Write operations (CQRS)
-│   └── queries/         # Read operations (CQRS)
-│
+├── domain/          # Models, ports/interfaces, services, events, exceptions
+├── application/     # Commands, queries, use cases, DTOs
 ├── adapters/
-│   ├── inbound/
-│   │   ├── api/         # FastAPI routers and schemas
-│   │   └── event_handlers/
-│   └── outbound/
-│       ├── persistence/ # Repositories
-│       ├── clients/     # External API adapters
-│       └── gateways/    # Gateway wrappers (Bridge pattern)
-│
-└── config/
-    ├── container.py     # Dependency injection wiring
-    ├── settings.py      # Environment config
-    └── events.py        # Event bus wiring
+│   ├── inbound/     # Routers, controllers, event handlers
+│   └── outbound/    # Repositories, API clients, gateways
+└── config/          # DI container, settings, wiring
 ```
+
+**Layered MVC (Rails, Django, Laravel, Spring):**
+```
+app/
+├── models/          # Domain models, validations
+├── services/        # Business logic
+├── controllers/     # HTTP handlers
+└── config/          # Settings, routes
+```
+
+**Feature-based (Next.js, Flutter, React):**
+```
+src/ or lib/
+├── features/
+│   └── <feature>/
+│       ├── domain/      # Models, interfaces
+│       ├── data/        # Repositories, API calls
+│       └── presentation/ # UI, controllers, pages
+└── core/                # Shared utilities, base classes
+```
+
+Use whatever structure the project already has. The principle is dependency direction, not directory names.
 
 ---
 
 ## What belongs in each layer
 
-### domain/
+### Inner layer (domain / models)
 
 - Entities, value objects, aggregates
-- Port interfaces (abstract base classes only — no implementations)
+- Port interfaces or abstract classes — no implementations
 - Domain services that orchestrate entities and ports
-- Domain events (immutable dataclasses)
-- Domain exceptions that describe business failures (not HTTP failures)
+- Domain events (immutable data objects)
+- Domain exceptions that describe business failures (not HTTP status codes)
 
-Domain code may not import: `fastapi`, `sqlalchemy`, `httpx`, `requests`, `boto3`, any cloud SDK, any database driver, any messaging library.
+Inner-layer code may not import framework types, database drivers, HTTP libraries, cloud SDKs, or any infrastructure dependency.
 
-### application/
+### Middle layer (application / services / use cases)
 
-- Command handlers: one class per write operation
-- Query handlers: one class per read operation
+- Command handlers: one per write operation
+- Query handlers: one per read operation
 - DTOs used by commands and queries
 
-Application code may not import: anything from `adapters/`.
+May import from inner layer only. May not import adapter code.
 
-### adapters/
+### Outer layer (adapters / controllers / infrastructure)
 
-- FastAPI routers and Pydantic request/response schemas
+- HTTP handlers, routers, controllers
 - Event consumers and publishers
-- Repository implementations (translate between domain models and database rows)
+- Repository implementations (translate between domain models and persistence)
 - External API adapters (translate between domain ports and external APIs)
 - Gateway wrappers (add retry, circuit breaking, rate limiting)
+- Request/response schemas and serialization
 
-### config/
+### Composition root (config / wiring)
 
-- Dependency injection container (wires everything together)
-- Settings (reads environment variables via Pydantic BaseSettings)
+- Dependency injection container or wiring module
+- Settings and environment configuration
 - Event bus wiring
+- May import from all layers — this is the only place where the full dependency graph is visible
 
 ---
 
-## CQRS separation
+## CQRS separation (when applicable)
 
-Every write operation is a **Command** with a **CommandHandler**.
-Every read operation is a **Query** with a **QueryHandler**.
+If the project uses CQRS:
+- Every write operation is a Command with a CommandHandler
+- Every read operation is a Query with a QueryHandler
+- Commands and queries are never mixed in the same handler
+- A command handler must not return query results
 
-Commands and queries are never mixed in the same handler.
-A command handler must not return query results — it returns only the created or updated entity or a void acknowledgement.
+Not all projects use CQRS. Simpler projects may have a single service layer handling both reads and writes — this is fine if the project is structured that way.
 
 ---
 
 ## What these principles protect
 
-These rules exist to ensure:
-
 1. The domain can be unit-tested without any infrastructure
-2. Any adapter (database, API, queue) can be replaced without touching domain or application code
-3. The system can be reasoned about layer by layer without understanding all of it simultaneously
-4. Tenant isolation can be enforced at a single layer boundary (the adapter)
+2. Any adapter can be replaced without touching domain or application code
+3. The system can be reasoned about layer by layer
+4. Data isolation can be enforced at a single boundary

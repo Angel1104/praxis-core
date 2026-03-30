@@ -2,7 +2,7 @@
 name: spec
 description: >
   Produces a fully reviewed and approved specification for an open CR. Use after
-  engineering-intake has produced a CR item. Accepts a CR-ID. Drafts the spec
+  /triage has produced a CR item. Accepts a CR-ID. Drafts the spec
   proportional to the CR's complexity, runs multi-agent review (domain-analyst,
   sw-architect, security-engineer), resolves all blockers autonomously, and locks
   the approved spec. Asks the human only when a genuine business decision surfaces.
@@ -36,9 +36,9 @@ Before doing anything, read your bundled references:
 
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found. Run `/intake` first."
-4. Read `CLAUDE.md` — check `SDM Gates:`. If `spec=off`:
-   > "Spec gate is disabled for this project (`SDM Gates: spec=off` in `CLAUDE.md`).
+   > "No CR item found. Run `/triage` first."
+4. Read `CLAUDE.md` — check `Praxis Gates:`. If `spec=off`:
+   > "Spec gate is disabled for this project (`Praxis Gates: spec=off` in `CLAUDE.md`).
    > Set CR state to `SPEC_APPROVED` and proceed with `/plan [cr-id]`."
    Update CR state to `SPEC_APPROVED`. Stop.
 5. Check CR state is `OPEN`. If:
@@ -58,15 +58,15 @@ Before doing anything, read your bundled references:
 ## Phase 1: Context Loading (silent)
 
 1. Read the full CR item — type, severity, track, rigor, intent, assessment, decisions already made
-2. Read `CLAUDE.md` — check `SDM Domain:` and `SDM Gates:` lines
+2. Read `CLAUDE.md` — check `Praxis Domain:` and `Praxis Gates:` lines
 3. Read `ARCHITECTURE.md` if it exists — use this as the project context instead of scanning `src/`
    - If `ARCHITECTURE.md` does not exist: scan the main source directory for related patterns as needed
 4. Scan `specs/cr/` for related or dependent specs
 5. If `specs/lessons-learned.md` exists, read it and surface any entries relevant to this CR
 
 **Domain routing:**
-- If `SDM Domain: software` (or absent) → proceed to Phase 2 (Technical Spec)
-- If `SDM Domain: content | research | strategy | general` → proceed to Phase 2B (Plan Brief)
+- If `Praxis Domain: software` (or absent) → proceed to Phase 2 (Technical Spec)
+- If `Praxis Domain: content | research | strategy | general` → proceed to Phase 2B (Plan Brief)
 
 Decide proportionality: see `references/spec-quality-rules.md` proportionality table.
 
@@ -83,7 +83,7 @@ Annotation conventions:
 - `(inferred — verify)` — derived from context, flag for confirmation
 - `BUSINESS DECISION REQUIRED` — blocks approval until resolved
 
-Apply all technical defaults (async FastAPI, Pydantic v2, SQLAlchemy, tenant_uid on all repository methods, JWT RS256, etc.) without asking.
+Apply technical defaults from the stack reference (`references/stack-<platform>.md`) without asking. If no stack reference exists, apply defaults from `ARCHITECTURE.md` "Established Patterns" section. If neither exists, apply only what can be safely inferred from the CR description — flag anything uncertain with `(inferred — verify)`.
 
 For sections not applicable to this CR type: write `N/A — [one-sentence justification]`.
 
@@ -91,7 +91,7 @@ For sections not applicable to this CR type: write `N/A — [one-sentence justif
 
 ## Phase 2B: Plan Brief (non-software domains)
 
-*Only for `SDM Domain: content | research | strategy | general`.*
+*Only for `Praxis Domain: content | research | strategy | general`.*
 
 Instead of a technical spec, produce a **Plan Brief** — a focused artifact that answers
 8 questions about the work before execution begins.
@@ -236,7 +236,8 @@ Read the spec draft once. Then apply each perspective against it:
   compatibility decision recorded — or explicitly N/A with justification)
 
 **Perspective 3 — Security exposure:**
-- Is tenant isolation addressed for every data access path?
+- If `Praxis IsolationKey` is set: is data isolation enforced for every data access path using that key?
+- If `Praxis IsolationKey` is absent or "none": are there any implicit data ownership assumptions that need explicit access control?
 - Are all write endpoints authenticated?
 - Are there injection risks or unvalidated inputs?
 - Is the security defaults section complete?

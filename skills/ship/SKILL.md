@@ -1,7 +1,7 @@
 ---
-name: close
+name: ship
 description: >
-  Formally closes a CR after post-build review has passed. Use after engineering-review
+  Formally closes a CR after post-build review has passed. Use after /audit
   has produced a PASS verdict. Accepts a CR-ID. Verifies all acceptance criteria are met,
   documents the outcome, surfaces lessons learned, creates follow-up CRs if needed, and
   produces the closure artifact. Human confirms before the CR is closed.
@@ -35,12 +35,12 @@ Before doing anything, read your bundled references:
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
    > "No CR item found."
-4. Read `CLAUDE.md` — check `SDM Gates:`. If `review=off`, accept state `IMPLEMENTING` as valid for closure (review was skipped by gate config).
+4. Read `CLAUDE.md` — check `Praxis Gates:`. If `review=off`, accept state `IMPLEMENTING` as valid for closure (review was skipped by gate config).
 5. Check CR state is `REVIEWING`. If not:
-   - Earlier state → "Review not complete. Run `/review [cr-id]` first."
+   - Earlier state → "Review not complete. Run `/audit [cr-id]` first."
    - `CLOSED` → "This CR is already closed."
 5. Verify the review report in the CR item has verdict `PASS`. If `BLOCKED`:
-   > "Review is still blocked. Resolve all BLOCKER findings in `/review [cr-id]` before closing."
+   > "Review is still blocked. Resolve all BLOCKER findings in `/audit [cr-id]` before closing."
 
 ---
 
@@ -48,10 +48,7 @@ Before doing anything, read your bundled references:
 
 1. Read the full CR item — original intent, assessment, decisions made
 2. Read the approved spec — all acceptance criteria
-3. Run the full test suite for this CR:
-   ```bash
-   pytest tests/<cr-id>/ -v
-   ```
+3. Run `Praxis TestCommand` (from `CLAUDE.md`) to verify all tests pass.
 4. For each AC in the spec, confirm:
    - Is there a test covering it?
    - Does the test pass?
@@ -63,7 +60,7 @@ If any AC is not met: do not proceed to Phase 4. Present the gap to the develope
 
 ## Phase 2: Lessons Learned (silent)
 
-Read `CLAUDE.md` — if `SDM Gates: lessons=off`, skip this phase entirely.
+Read `CLAUDE.md` — if `Praxis Gates: lessons=off`, skip this phase entirely.
 
 Apply the quality gate from `references/lessons-learned-rules.md`:
 - Keep if the lesson is non-obvious to a competent engineer in this domain, or likely to recur.
@@ -74,7 +71,7 @@ For each lesson that passes:
 - Use the format defined in `references/lessons-learned-rules.md`.
 
 If any lesson looks like a missing process rule rather than a knowledge item, surface it to the human:
-> "This may warrant a doctrine update — consider `/intake` if you agree."
+> "This may warrant a doctrine update — consider `/triage` if you agree."
 Do NOT modify doctrine or create CRs autonomously.
 
 ---
@@ -82,7 +79,7 @@ Do NOT modify doctrine or create CRs autonomously.
 ## Phase 2B: Feed-Forward (silent)
 
 Write a feed-forward block to `specs/feed-forward.md` (create if it doesn't exist).
-This file persists across CRs and is read by `/intake` at the start of each new CR.
+This file persists across CRs and is read by `/triage` at the start of each new CR.
 
 Append a new entry:
 
@@ -106,7 +103,7 @@ If nothing worth noting: write `FF-[cr-id] — no feed-forward items.`
 Identify deferred work:
 - Items noted as "follow-up CR" in the plan or build summary
 - Risks documented and accepted during the CR
-- Warnings from engineering-review noted but not addressed
+- Warnings from /audit noted but not addressed
 - Adjacent issues discovered during implementation
 
 - **Consumer CR verification:** If the CR item has a `## Dependencies` section listing `Produces:`,
@@ -247,7 +244,7 @@ For each follow-up item, create a minimal CR item in OPEN state at `specs/cr/<ne
 >
 > [Brief: what was delivered, AC count]
 >
-> [If follow-up CRs: "Follow-up CRs created: [list]. Run `/intake` on each when ready."]
+> [If follow-up CRs: "Follow-up CRs created: [list]. Run `/triage` on each when ready."]
 > [If lessons learned: "Lessons documented in closure report."]
 > [If advisories carried forward: "Advisories noted — worth reviewing before next similar CR."]
 

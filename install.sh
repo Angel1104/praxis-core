@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — Installs SDM Core skills into a target project
+# install.sh — Installs Praxis Core skills into a target project
 # Usage: ./install.sh /path/to/your/project
 #
 # What it does:
@@ -24,12 +24,12 @@ fi
 DEST="$TARGET/.claude/skills"
 mkdir -p "$DEST"
 
-echo "Installing SDM Core into $DEST ..."
+echo "Installing Praxis Core into $DEST ..."
 cp -r "$SCRIPT_DIR/skills/"* "$DEST/"
 echo "Done."
 echo ""
 echo "Next steps:"
 echo "  cd $TARGET"
 echo "  Open Claude Code and run:"
-echo "    /init        — if this is a new project with no code yet"
-echo "    /setup --python | --flutter | --nestjs | --nextjs  — if this project already has code"
+echo "    /init    — if this is a new project with no code yet"
+echo "    /setup   — if this project already has code (auto-detects your stack)"

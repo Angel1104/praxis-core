@@ -68,7 +68,7 @@ Does not include: anything that should be `architecture`, `security`, or `testin
 Assign when: the finding creates or exposes a security risk.
 
 Includes:
-- Tenant isolation gap (query without tenant_uid, or cross-tenant access path)
+- Data isolation gap (query without isolation key, or cross-context access path)
 - Authentication check missing
 - Authorisation check missing or insufficient
 - Input not validated at adapter boundary
@@ -76,7 +76,7 @@ Includes:
 - Data exposure (returning more data than the caller is authorised to see)
 - Injection risk (SQL, command, path traversal)
 
-Note: a missing tenant_uid filter is always classified as `security`, not `architecture`, because the risk is data exposure, not structural.
+Note: a missing isolation key filter is always classified as `security`, not `architecture`, because the risk is data exposure, not structural.
 
 ### `testing`
 

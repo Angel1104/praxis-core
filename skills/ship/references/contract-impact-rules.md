@@ -5,38 +5,43 @@
 A contract surface is any interface your system exposes that external consumers depend on.
 Breaking a contract surface breaks those consumers.
 
-| Surface type | Python/FastAPI | Flutter |
-|---|---|---|
-| REST endpoint | FastAPI route decorator + Pydantic request/response schema | Dio API client method + response model |
-| Domain event | Event class in `domain/events/` published to Pub/Sub | N/A (consumers only) |
-| Shared port interface | Abstract class in `domain/ports/` used across bounded contexts | Repository interface in `domain/` |
-| DB schema (exposed) | SQLAlchemy model fields read by other services directly | N/A |
+| Surface type | What to look for |
+|---|---|
+| REST endpoint | Route/controller decorator + request/response schema |
+| Domain event | Event class published to message bus or Pub/Sub |
+| Shared port interface | Abstract class or interface used across bounded contexts |
+| DB schema (exposed) | Model fields read by other services directly |
 
 ## How to detect contract surfaces from code
 
 Scan for the following before marking Contract Impact as N/A:
 
-**Python/FastAPI:**
+Use `Praxis FileExt` and `Praxis SourceRoot` from CLAUDE.md to construct detection commands. Patterns vary by stack — adapt to the project's routing layer, schema definitions, event definitions, and port interfaces.
+
+Common detection patterns:
 ```bash
-grep -r "@router\." src/adapters/inbound/          # REST endpoints
-grep -r "class.*BaseModel" src/adapters/inbound/   # request/response schemas
-grep -r "class.*Event" src/domain/events/          # domain events
-grep -r "class.*Port" src/domain/ports/            # port interfaces
+# REST endpoints — search the inbound/routing layer
+grep -rn "<routing_decorator_pattern>" $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
+
+# Request/response schemas — search inbound adapters
+grep -rn "class.*Schema\|class.*Model\|class.*Dto\|class.*Request\|class.*Response" \
+  $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
+
+# Domain events
+grep -rn "class.*Event" $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
+
+# Port interfaces
+grep -rn "class.*Port\|class.*Repository\|interface.*Repository\|trait.*Repository" \
+  $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
 ```
 
-**Flutter:**
-```bash
-grep -r "Future<" lib/*/domain/repositories/       # repository interfaces
-grep -r "class.*Response" lib/*/infrastructure/    # API response models
-grep -r "class.*Model" lib/*/domain/entities/      # domain entities
-```
+The routing decorator pattern depends on the framework. Read the stack reference to know what it looks like in this project.
 
 ## How to identify known dependents
 
 Scan the codebase for consumers of the contract surface:
 
-1. **REST endpoints**: search for the path string in other services' API client code and
-   in the Flutter infrastructure layer (`lib/*/infrastructure/datasources/`)
+1. **REST endpoints**: search for the path string in other services' API client code
 2. **Domain events**: search for the event class name in adapter event handlers and
    in any documented Pub/Sub subscriptions
 3. **Port interfaces**: search for the port class name across all bounded contexts
@@ -140,9 +145,7 @@ Affected component in this system: <where the consumer code lives>
   severity to `High`
 The consumer CR's own spec stage will re-assess classification as usual.
 
-**CR-ID generation:** Use timestamp format `YYMMDD-HHMMSS`. When creating multiple consumer
-CRs in a single session (within the same second), append a disambiguator: `260316-143001`,
-`260316-143002`, etc.
+**CR-ID generation:** Use the incremental format `CR-NNNN`. Read `specs/cr/BACKLOG.md` to find the highest existing CR number, then increment. When creating multiple consumer CRs in a single session, increment sequentially (e.g. `CR-0043`, `CR-0044`).
 
 Then add a row to `specs/cr/BACKLOG.md` and commit:
 ```bash

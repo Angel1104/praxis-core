@@ -1,9 +1,9 @@
 ---
-name: cr
+name: flow
 description: >
   Fully automated CR pipeline — runs all remaining stages uninterrupted after resolving any
-  business decisions upfront. Use after /intake has produced a CR item. Accepts a CR-ID.
-  Clarifies all open business questions before starting, then runs spec → plan → build → review → close
+  business decisions upfront. Use after /triage has produced a CR item. Accepts a CR-ID.
+  Clarifies all open business questions before starting, then runs spec → plan → build → audit → ship
   uninterrupted except for the mandatory Close confirmation. Informs on technical decisions; never asks
   about them. Resumes mid-pipeline CRs from the correct stage.
   Also use when: "run the full pipeline", "automate this CR", "let Claude handle it".
@@ -11,7 +11,7 @@ argument-hint: <cr-id>
 user-invocable: true
 ---
 
-# CR — Automated Pipeline
+# Flow — Automated Pipeline
 
 **Role: Technical Lead**
 
@@ -26,7 +26,7 @@ You are responsible for running the full CR pipeline automatically. You own all 
    Wait for the answer, then continue.
 
 2. Locate `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found for <cr-id>. Run `/intake` first."
+   > "No CR item found for <cr-id>. Run `/triage` first."
    Stop.
 
 3. Read the CR item fully — intent, type, severity, acceptance criteria, assessment, changelog.
@@ -40,7 +40,7 @@ You are responsible for running the full CR pipeline automatically. You own all 
 | `SPEC_APPROVED` | plan |
 | `PLAN_READY` | build |
 | `IMPLEMENTING` | build (continue from current sub-state) |
-| `REVIEWING` | review (continue) |
+| `REVIEWING` | audit (continue) |
 | `CLOSED` | nothing — report CR is already closed |
 
 5. Report:
@@ -76,12 +76,14 @@ Technical questions are NOT business questions. If the answer can be determined 
 
 Execute each remaining stage in sequence by reading and following the stage skill's instructions exactly as if it had been invoked directly.
 
-**Stage instructions are located at:**
-- Spec: `sdm-skill-pack/skills/spec/SKILL.md`
-- Plan: `sdm-skill-pack/skills/plan/SKILL.md`
-- Build: `sdm-skill-pack/skills/build/SKILL.md`
-- Review: `sdm-skill-pack/skills/review/SKILL.md`
-- Close: `sdm-skill-pack/skills/close/SKILL.md`
+**Stage instructions are located at** (relative to the `.claude/skills/` directory where Praxis is installed):
+- Spec: `skills/spec/SKILL.md`
+- Plan: `skills/plan/SKILL.md`
+- Build: `skills/build/SKILL.md`
+- Audit: `skills/audit/SKILL.md`
+- Ship: `skills/ship/SKILL.md`
+
+If skills are not found at those paths, look for them at `.claude/skills/` or `skills/` relative to the project root.
 
 For each stage:
 1. Read the stage SKILL.md.
@@ -101,7 +103,7 @@ For each stage:
 4. Report: > "Stage <name> complete. Continuing to <next stage>."
 5. Proceed to the next stage.
 
-**Close stage — mandatory confirmation:** When executing the close stage, always present the closure summary and wait for human confirmation before proceeding to Phase 5. Do not skip this gate. The human must explicitly confirm before the CR is marked CLOSED. The only fast-path: if one or more acceptance criteria are unmet, stop immediately and surface the gap without producing a closure summary.
+**Ship stage — mandatory confirmation:** When executing the ship stage, always present the closure summary and wait for human confirmation before proceeding to Phase 5. Do not skip this gate. The human must explicitly confirm before the CR is marked CLOSED. The only fast-path: if one or more acceptance criteria are unmet, stop immediately and surface the gap without producing a closure summary.
 
 **Technical decisions encountered during execution:**
 - Make the decision using codebase knowledge, stack doctrine, and engineering judgement.

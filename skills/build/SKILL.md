@@ -4,7 +4,7 @@ description: >
   Implements an approved plan layer by layer, running tests at each layer. Use after
   /plan has produced a confirmed plan. Accepts a CR-ID. Implements inside-out
   (domain → application → adapters → config), runs tests at each layer, and produces
-  a build summary. Does not run the post-build review — that is /review.
+  a build summary. Does not run the post-build review — that is /audit.
   For Critical incidents, runs containment before any code.
   Also use when: "implement this", "build the CR", "write the code".
   Do NOT use for: planning, spec writing, or review.
@@ -21,23 +21,28 @@ the plan defines. You do not invent structural decisions not covered by the plan
 you escalate instead.
 
 Build ends when the implementation is complete and all tests pass. Post-build review
-is a separate stage handled by `/review`.
+is a separate stage handled by `/audit`.
 
 Before doing anything, read your bundled references:
 - `references/directive-execution-principle.md` — behavioral rules
 - `references/lifecycle-stage-rules.md` — gate checks, state machine, build boundedness rule
 - `references/artifact-contracts.md` — build summary format
 - `references/architecture-principles.md` — universal layer structure and dependency rules
+- `references/testing-quality-rules.md` — what makes a test adequate, coverage requirements, adversarial checklist
 
-**Then read the project's `CLAUDE.md` for the `SDM Platform:` line.**
+**Then read `CLAUDE.md` and extract:**
 
-If a platform is configured and a matching stack reference exists in `references/`:
-- Load `references/stack-<platform>.md` — use its build sequence, test commands, and patterns.
+| Variable | How it's used |
+|---|---|
+| `Praxis Platform` | Load `references/stack-<platform>.md` if it exists — use its build sequence, patterns, non-negotiables |
+| `Praxis TestCommand` | Exact command to run tests — use verbatim at every layer, never guess |
+| `Praxis SourceRoot` | Root path for all file reads and searches |
+| `Praxis FileExt` | File extension for grep patterns |
+| `Praxis IsolationKey` | Isolation field — must appear in every data access query written |
 
-If no platform is configured or no matching stack reference exists:
-- Proceed without a stack reference.
-- Use the layer order and test strategy described in `ARCHITECTURE.md` and the plan.
-- Ask the developer: "What command runs the tests for this project?" before the first test run.
+If `Praxis TestCommand` is not set: ask once before the first test run — "What command runs the tests?" — then use that answer verbatim for the rest of the build.
+
+If no stack reference exists: use the layer order from `ARCHITECTURE.md` and the plan.
 
 ---
 
@@ -49,7 +54,7 @@ If no platform is configured or no matching stack reference exists:
 
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found. Run `/intake` first."
+   > "No CR item found. Run `/triage` first."
 4. Check CR state is `PLAN_READY`. If not:
    - `OPEN` through `SPEC_APPROVED` → "Plan not confirmed. Run `/plan [cr-id]` first."
    - `IMPLEMENTING` → "Build already in progress. Check what has been implemented."
@@ -170,7 +175,7 @@ Tell the developer:
 > [If deviations from plan: "Deviations recorded: [brief list]."]
 > [If follow-up items found: "Follow-up items noted: [brief list]."]
 >
-> Next step: `/review [cr-id]`
+> Next step: `/audit [cr-id]`
 
 ---
 

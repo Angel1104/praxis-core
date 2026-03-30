@@ -54,7 +54,7 @@ After verifying acceptance criteria, before producing the closure artifact:
 
 4. If a lesson looks like a **missing process rule or convention** — not a knowledge
    item but a gap in how the team works — surface it explicitly to the human:
-   > "This may warrant a doctrine update — consider `/intake` if you agree."
+   > "This may warrant a doctrine update — consider `/triage` if you agree."
    Do NOT modify doctrine or create CRs autonomously.
 
 ---

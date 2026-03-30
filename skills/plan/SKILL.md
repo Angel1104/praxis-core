@@ -26,12 +26,13 @@ Before doing anything, read your bundled references:
 - `references/artifact-contracts.md` — required plan artifact format
 - `references/implementation-planning-rules.md` — how to produce a sound plan
 - `references/architecture-principles.md` — layer structure and dependency rules for the blueprint
+- `references/testing-quality-rules.md` — test skeleton structure, coverage requirements, naming conventions
 
 ---
 
 ## Input
 
-`$ARGUMENTS` — the CR-ID. Example: `260315-142300`
+`$ARGUMENTS` — the CR-ID. Example: `CR-0042`
 
 ---
 
@@ -42,10 +43,10 @@ Before doing anything, read your bundled references:
    Wait for the answer, then continue.
 
 2. Read the CR item at `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found for [cr-id]. Run `/intake` first."
+   > "No CR item found for [cr-id]. Run `/triage` first."
 
-3. Read `CLAUDE.md` — check `SDM Gates:`. If `plan=off`:
-   > "Plan gate is disabled for this project (`SDM Gates: plan=off` in `CLAUDE.md`).
+3. Read `CLAUDE.md` — check `Praxis Gates:`. If `plan=off`:
+   > "Plan gate is disabled for this project (`Praxis Gates: plan=off` in `CLAUDE.md`).
    > Set CR state to `PLAN_READY` and proceed with `/build [cr-id]`."
    Update CR state to `PLAN_READY`. Stop.
 
@@ -63,9 +64,11 @@ Before doing anything, read your bundled references:
 
 1. Read the full approved spec
 2. Read the full CR item (note the rigor level)
-3. Read `ARCHITECTURE.md` if it exists — use this as the codebase context instead of scanning `src/`
-   - If `ARCHITECTURE.md` does not exist: scan `src/domain/`, `src/application/`, `src/adapters/`, `tests/` as needed
-4. Read existing code files only for components the plan will directly extend or reuse
+3. Read `CLAUDE.md` — extract `Praxis Platform`, `Praxis TestCommand`, `Praxis TestRunner`, `Praxis SourceRoot`, `Praxis IsolationKey`
+4. Read `ARCHITECTURE.md` if it exists — use as codebase context instead of scanning source directories
+   - If `ARCHITECTURE.md` does not exist: scan `Praxis SourceRoot` (or `src/` if not set) and `tests/` as needed
+5. Load `references/stack-<platform>.md` if `Praxis Platform` is set — use its Build Sequence and Test Strategy
+6. Read existing code files only for components the plan will directly extend or reuse
 
 Identify: is this CR extending an established pattern, or introducing something structurally new? That determines blueprint depth.
 
@@ -205,37 +208,26 @@ Create `tests/<cr-id>/` directory.
 
 For each acceptance criterion in the spec, generate a test skeleton. Tests are designed to fail until Build implements the code.
 
-```python
-# tests/<cr-id>/test_<feature>.py
+Use `Praxis TestRunner` and `Praxis Language` from CLAUDE.md to write skeletons in the correct language and runner style:
 
-class TestCR<CrId>:
-    """
-    CR-<cr-id>: <one-line summary>
-    """
+| `Praxis TestRunner` | Skeleton style |
+|-----------------|---------------|
+| `pytest` | `class TestCR...: / async def test_...():` with `raise NotImplementedError` |
+| `jest` / `vitest` | `describe('CR-...', () => { it('...', async () => { throw new Error('not implemented') }) })` |
+| `rspec` | `RSpec.describe '...' do / it '...' do / raise NotImplementedError / end / end` |
+| `go test` | `func TestCR<id>_<ac>(t *testing.T) { t.Fatal("not implemented") }` |
+| `flutter test` | `test('...', () { throw UnimplementedError(); });` |
+| other | Match the runner's standard test structure |
 
-    async def test_<ac_n>_<description>_happy_path(self):
-        """AC-<n>: <acceptance criterion text>"""
-        # GIVEN
-        # WHEN
-        # THEN
-        raise NotImplementedError
+If `Praxis TestRunner` is not set: use generic pseudocode with GIVEN/WHEN/THEN comments and a clear "not implemented" marker.
 
-    async def test_<ac_n>_<description>_tenant_isolation(self):
-        """AC-<n>: Tenant B must not access Tenant A's data through this path"""
-        # GIVEN two tenants with similar data
-        # WHEN Tenant A's operation runs
-        # THEN Tenant B's data is not affected or visible
-        raise NotImplementedError
-
-    async def test_<ac_n>_<description>_<error_scenario>(self):
-        """AC-<n>: Expected error handling"""
-        # GIVEN
-        # WHEN
-        # THEN
-        raise NotImplementedError
-```
-
-**Tenant isolation test is mandatory for any CR that touches data access** — even when not explicitly in the ACs.
+Each skeleton must cover:
+1. **Happy path** — AC satisfied with valid inputs
+2. **Error scenario** — at least one failure case per AC
+3. **Isolation test** — if `Praxis IsolationKey` is set and the CR touches data access:
+   - Context A (`<Praxis IsolationKey>=context-a`) creates data
+   - Context B (`<Praxis IsolationKey>=context-b`) attempts to access it → must fail or return nothing
+   - This test is mandatory even when not explicitly in the ACs
 
 For a refactor CR: skip test generation. Note that existing tests cover the behaviour.
 

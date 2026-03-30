@@ -1,20 +1,20 @@
 ---
 name: help
 description: >
-  Explains how the SDM lifecycle works. Use when you want to understand what a
+  Explains how the Praxis lifecycle works. Use when you want to understand what a
   skill does, what order to run them, how gates work, how to configure the project,
-  or how to handle a specific situation. Answers any question about the SDM system.
+  or how to handle a specific situation. Answers any question about the Praxis system.
   Usage: /help
   Also use when: "how does this work", "what do I run next", "explain /spec",
   "what is a CR", "how do I configure gates", "what is the difference between /init and /setup".
 argument-hint: (optional: topic or question)
 ---
 
-# SDM Help
+# Praxis Help
 
 **Role: Guide**
 
-You explain the SDM lifecycle clearly and concisely. Read `CLAUDE.md` first to
+You explain the Praxis lifecycle clearly and concisely. Read `CLAUDE.md` first to
 understand the project's current configuration (platform, domain, gates), then
 answer in context.
 
@@ -23,9 +23,9 @@ If `$ARGUMENTS` contains a question or topic: answer it directly and specificall
 
 ---
 
-## Overview — What is SDM?
+## Overview — What is Praxis?
 
-SDM (Spec-Driven Method) is a lightweight lifecycle for managing engineering changes —
+Praxis is a lightweight lifecycle for managing engineering changes —
 or any kind of work — with structure, traceability, and just enough process.
 
 Every piece of work goes through a **CR (Change Request)**. A CR has a state that
@@ -52,17 +52,17 @@ Run one of these before anything else. You only need to re-run when the architec
 ### Lifecycle skills (run per CR, in order)
 
 ```
-/intake → /spec → /plan → /build → /review → /close
+/triage → /spec → /plan → /build → /audit → /ship
 ```
 
 | Skill | Stage | What it does | Input | Output |
 |-------|-------|-------------|-------|--------|
-| `/intake` | 1 — Triage | Classifies the change, assesses risk, produces a CR item | Anything: description, error log, file, URL | `specs/cr/<cr-id>.cr.md` |
+| `/triage` | 1 — Triage | Classifies the change, assesses risk, produces a CR item | Anything: description, error log, file, URL | `specs/cr/<cr-id>.cr.md` |
 | `/spec` | 2 — Specification | Drafts a spec, reviews it through 3 perspectives, locks it | CR-ID | `specs/cr/<cr-id>.spec.md` |
 | `/plan` | 3 — Planning | Translates the spec into a layered build plan with waves | CR-ID | `specs/cr/plans/<cr-id>.plan.md` |
 | `/build` | 4 — Implementation | Implements layer by layer following the plan | CR-ID | Code + tests |
-| `/review` | 5 — Review | Reviews the build: structure, security, correctness | CR-ID | Review report in CR item |
-| `/close` | 6 — Closure | Verifies ACs, captures lessons, feed-forward, closes the CR | CR-ID | `specs/cr/<cr-id>.close.md` |
+| `/audit` | 5 — Review | Reviews the build: structure, security, correctness | CR-ID | Review report in CR item |
+| `/ship` | 6 — Closure | Verifies ACs, captures lessons, feed-forward, closes the CR | CR-ID | `specs/cr/<cr-id>.close.md` |
 
 ---
 
@@ -70,17 +70,17 @@ Run one of these before anything else. You only need to re-run when the architec
 
 | Skill | When to use |
 |-------|-------------|
-| `/cr` | Runs the full pipeline (spec → plan → build → review → close) automatically from a CR-ID. Resolves business questions upfront, then runs uninterrupted. Use when you trust Claude to handle the whole pipeline. |
-| `/engineer` | Ad-hoc implementation, code review, refactoring, or debugging — outside of a CR. No lifecycle tracking. |
+| `/flow` | Runs the full pipeline (spec → plan → build → review → close) automatically from a CR-ID. Resolves business questions upfront, then runs uninterrupted. Use when you trust Claude to handle the whole pipeline. |
+| `/craft` | Ad-hoc implementation, code review, refactoring, or debugging — outside of a CR. No lifecycle tracking. |
 
 ---
 
 ## Gates and rigor
 
 Every CR has a **rigor level**. You almost never need to set it manually —
-`/intake` reads what you describe and decides automatically:
+`/triage` reads what you describe and decides automatically:
 
-| What you describe | How intake classifies it | Pipeline assigned |
+| What you describe | How triage classifies it | Pipeline assigned |
 |-------------------|--------------------------|-------------------|
 | "the button is broken", "this crashes when…" | `fix`, Normal | lean spec → build → review → close |
 | "add a new feature", "I want users to be able to…" | `feature`, Normal | full spec → plan → build → review → close |
@@ -88,7 +88,7 @@ Every CR has a **rigor level**. You almost never need to set it manually —
 | "security vulnerability in…", "user can access other accounts" | `security`, High | full spec → plan → build → review → close |
 | "production is down", "critical error in…" | `incident`, Critical | containment → build → review → close |
 
-**You only need `--rigor` when you want to override what intake would decide:**
+**You only need `--rigor` when you want to override what triage would decide:**
 
 | Flag | When to use it |
 |------|---------------|
@@ -98,16 +98,16 @@ Every CR has a **rigor level**. You almost never need to set it manually —
 
 **Example:**
 ```
-/intake "add a contact modal"
+/triage "add a contact modal"
 ```
-→ Intake classifies as `feature`, assigns full spec. Fine for a real feature.
+→ Triage classifies as `feature`, assigns full spec. Fine for a real feature.
 
 ```
-/intake --rigor fast "add a contact modal"
+/triage --rigor fast "add a contact modal"
 ```
-→ Same classification, but you're telling intake: "I know this is small, skip the spec."
+→ Same classification, but you're telling triage: "I know this is small, skip the spec."
 
-**Rule of thumb:** don't pass `--rigor` at all. Let intake decide. Only override when you disagree with what it would choose.
+**Rule of thumb:** don't pass `--rigor` at all. Let triage decide. Only override when you disagree with what it would choose.
 
 ---
 
@@ -116,7 +116,7 @@ Every CR has a **rigor level**. You almost never need to set it manually —
 Each gate can be turned off project-wide in `CLAUDE.md`:
 
 ```
-SDM Gates: spec=on, plan=on, review=on, lessons=on
+Praxis Gates: spec=on, plan=on, review=on, lessons=on
 ```
 
 Turn off gates you don't need for your project type:
@@ -135,7 +135,7 @@ need to remember.
 
 ## Domain
 
-`SDM Domain` in `CLAUDE.md` changes how `/spec` behaves:
+`Praxis Domain` in `CLAUDE.md` changes how `/spec` behaves:
 
 | Domain | What /spec produces |
 |--------|-------------------|
@@ -149,13 +149,13 @@ need to remember.
 
 ## Feed-forward
 
-Every time a CR closes, `/close` writes to `specs/feed-forward.md`:
+Every time a CR closes, `/ship` writes to `specs/feed-forward.md`:
 - Problems revealed during the CR
 - Scope that was deferred
 - Assumptions that turned out to be wrong
 - Open questions for future CRs
 
-The next `/intake` reads the last 3 entries and surfaces anything relevant.
+The next `/triage` reads the last 3 entries and surfaces anything relevant.
 This keeps learning from one CR flowing into the next automatically.
 
 ---
@@ -163,7 +163,7 @@ This keeps learning from one CR flowing into the next automatically.
 ## Files and directories
 
 ```
-CLAUDE.md                        ← SDM config: platform, domain, gates
+CLAUDE.md                        ← Praxis config: platform, domain, gates
 ARCHITECTURE.md                  ← Project snapshot (generated by /setup or /init)
 specs/
   cr/
@@ -193,16 +193,16 @@ Each skill checks the state before running and tells you if something is out of 
 ## Common questions
 
 **"Where do I start?"**
-Run `/init` (new project) or `/setup` (existing project). Then `/intake <describe your first change>`.
+Run `/init` (new project) or `/setup` (existing project). Then `/triage <describe your first change>`.
 
 **"What if I just want to fix a small bug quickly?"**
-Just describe it: `/intake fix the bug in X` — intake will classify it as a `fix` and assign a lean pipeline automatically. Only add `--rigor fast` if intake would classify it as something heavier (like a feature) but you know it's actually trivial.
+Just describe it: `/triage fix the bug in X` — triage will classify it as a `fix` and assign a lean pipeline automatically. Only add `--rigor fast` if triage would classify it as something heavier (like a feature) but you know it's actually trivial.
 
 **"Can I skip planning and just build?"**
-Yes: set `plan=off` in `SDM Gates`, or use `--rigor fast` on the CR. `/plan` will skip automatically.
+Yes: set `plan=off` in `Praxis Gates`, or use `--rigor fast` on the CR. `/plan` will skip automatically.
 
 **"I have a content/writing project, not code — does this work?"**
-Yes. Set `SDM Domain: content` and `SDM Gates: plan=off, review=off`. You'll get a Plan Brief instead of a tech spec, and the lifecycle tracks your writing work the same way.
+Yes. Set `Praxis Domain: content` and `Praxis Gates: plan=off, review=off`. You'll get a Plan Brief instead of a tech spec, and the lifecycle tracks your writing work the same way.
 
 **"What is a wave?"**
 In `/plan` and `/build`, work is broken into units and grouped into waves. Wave 1 = units with no dependencies (can run in parallel). Wave 2 = units that depend on Wave 1. This makes the build order explicit and prevents skipping dependencies.
@@ -211,7 +211,7 @@ In `/plan` and `/build`, work is broken into units and grouped into waves. Wave 
 Read `specs/cr/<cr-id>.cr.md` — the state is in the header table. Then run the skill for the current state.
 
 **"How do I run the full pipeline automatically?"**
-`/cr <cr-id>` — runs spec → plan → build → review → close uninterrupted. Asks only genuine business questions before starting.
+`/flow <cr-id>` — runs spec → plan → build → review → close uninterrupted. Asks only genuine business questions before starting.
 
 ---
 
@@ -220,13 +220,13 @@ Read `specs/cr/<cr-id>.cr.md` — the state is in the header table. Then run the
 ```
 New project:        /init
 Existing project:   /setup
-New change:         /intake [--rigor fast|standard|full] <description>
+New change:         /triage [--rigor fast|standard|full] <description>
 Write spec:         /spec <cr-id>
 Plan build:         /plan <cr-id>
 Build it:           /build <cr-id>
-Review build:       /review <cr-id>
-Close CR:           /close <cr-id>
-Full pipeline:      /cr <cr-id>
-Ad-hoc work:        /engineer <task>
+Review build:       /audit <cr-id>
+Close CR:           /ship <cr-id>
+Full pipeline:      /flow <cr-id>
+Ad-hoc work:        /craft <task>
 This help:          /help [topic]
 ```
