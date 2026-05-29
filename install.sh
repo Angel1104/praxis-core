@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# install.sh — Installs Praxis Core skills into a target project
-# Usage: ./install.sh /path/to/your/project
+# install.sh — Installs SDM skills into a target project (legacy path)
+# For plugin-based install, use: /plugin marketplace add <path> && /plugin install sdm@comocom
 #
-# What it does:
-#   1. Copies skills/ into <project>/.claude/skills/
-#   2. Does NOT touch CLAUDE.md or any project files — run /setup or /init after install
+# Usage: ./install.sh /path/to/your/project
+# What it does: copies skills/ into <project>/.claude/skills/
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,12 +23,11 @@ fi
 DEST="$TARGET/.claude/skills"
 mkdir -p "$DEST"
 
-echo "Installing Praxis Core into $DEST ..."
+echo "Installing SDM skills into $DEST ..."
 cp -r "$SCRIPT_DIR/skills/"* "$DEST/"
 echo "Done."
 echo ""
 echo "Next steps:"
 echo "  cd $TARGET"
 echo "  Open Claude Code and run:"
-echo "    /init    — if this is a new project with no code yet"
-echo "    /setup   — if this project already has code (auto-detects your stack)"
+echo "    /intake  describe your change or incident"

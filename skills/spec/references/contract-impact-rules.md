@@ -5,46 +5,30 @@
 A contract surface is any interface your system exposes that external consumers depend on.
 Breaking a contract surface breaks those consumers.
 
-| Surface type | What to look for |
-|---|---|
-| REST endpoint | Route/controller decorator + request/response schema |
-| Domain event | Event class published to message bus or Pub/Sub |
-| Shared port interface | Abstract class or interface used across bounded contexts |
-| DB schema (exposed) | Model fields read by other services directly |
+Common contract surface types include:
+- **API endpoints** — routes, request/response schemas
+- **Events / messages** — event definitions published to queues or topics
+- **Shared interfaces** — abstract interfaces used across modules or bounded contexts
+- **Database schemas** — tables or fields read by other services directly
 
 ## How to detect contract surfaces from code
 
 Scan for the following before marking Contract Impact as N/A:
 
-Use `Praxis FileExt` and `Praxis SourceRoot` from CLAUDE.md to construct detection commands. Patterns vary by stack — adapt to the project's routing layer, schema definitions, event definitions, and port interfaces.
+- API route definitions and their request/response models
+- Event or message class definitions
+- Public interface definitions shared across modules
+- Database model definitions exposed to other services
 
-Common detection patterns:
-```bash
-# REST endpoints — search the inbound/routing layer
-grep -rn "<routing_decorator_pattern>" $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
-
-# Request/response schemas — search inbound adapters
-grep -rn "class.*Schema\|class.*Model\|class.*Dto\|class.*Request\|class.*Response" \
-  $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
-
-# Domain events
-grep -rn "class.*Event" $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
-
-# Port interfaces
-grep -rn "class.*Port\|class.*Repository\|interface.*Repository\|trait.*Repository" \
-  $PRAXIS_SOURCE_ROOT --include="$PRAXIS_FILE_EXT"
-```
-
-The routing decorator pattern depends on the framework. Read the stack reference to know what it looks like in this project.
+Use the project's stack-appropriate search patterns (e.g., route decorators, schema classes, event definitions).
 
 ## How to identify known dependents
 
 Scan the codebase for consumers of the contract surface:
 
-1. **REST endpoints**: search for the path string in other services' API client code
-2. **Domain events**: search for the event class name in adapter event handlers and
-   in any documented Pub/Sub subscriptions
-3. **Port interfaces**: search for the port class name across all bounded contexts
+1. **API endpoints**: search for the path string in API client code across services
+2. **Events / messages**: search for the event class or topic name in handlers and subscriptions
+3. **Shared interfaces**: search for the interface name across all modules
 
 If dependents cannot be determined from the codebase, ask once:
 > "Are there external systems or teams that consume [contract surface]? If so, which?"
@@ -145,7 +129,9 @@ Affected component in this system: <where the consumer code lives>
   severity to `High`
 The consumer CR's own spec stage will re-assess classification as usual.
 
-**CR-ID generation:** Use the incremental format `CR-NNNN`. Read `specs/cr/BACKLOG.md` to find the highest existing CR number, then increment. When creating multiple consumer CRs in a single session, increment sequentially (e.g. `CR-0043`, `CR-0044`).
+**CR-ID generation:** Use timestamp format `YYMMDD-HHMMSS`. When creating multiple consumer
+CRs in a single session (within the same second), append a disambiguator: `260316-143001`,
+`260316-143002`, etc.
 
 Then add a row to `specs/cr/BACKLOG.md` and commit:
 ```bash

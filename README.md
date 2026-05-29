@@ -1,130 +1,232 @@
-# Praxis Core
+# Claude Engineering Skill Pack
 
-**Praxis** — a lightweight lifecycle for managing engineering changes with structure, traceability, and just enough process.
+A Claude Code plugin that implements the **Spec-Driven Development (SDM)** lifecycle as official Claude Code skills.
 
-Works for any language, framework, or project type. No stack assumptions.
-
----
-
-## What it does
-
-Every piece of work becomes a **CR (Change Request)** that moves through gates:
-
-```
-/triage → /spec → /plan → /build → /audit → /ship
-```
-
-Each gate produces an artifact. Each artifact is a Markdown file in `specs/cr/`. Nothing moves forward without the previous gate completing. The whole pipeline can run automatically with `/flow`.
+Every engineering change follows one lifecycle — Intake → Spec → Plan → Build → Review → Close — with specialist skills available at every stage. Stack and architecture agnostic: works with any language, framework, and project structure.
 
 ---
 
-## Install
+## Installation
+
+The plugin is distributed as a ZIP file through the course platform. No GitHub account required.
+
+### Prerequisites — Install Claude Code CLI
+
+The `/plugin` commands require the Claude Code CLI. If you only have the VSCode extension, install the CLI first.
 
 ```bash
-./install.sh /path/to/your/project
+npm install -g @anthropic-ai/claude-code
 ```
 
-Then open Claude Code in your project and run:
+Works on macOS, Linux, and Windows. Requires Node.js 18+. After installing, restart your terminal so the `claude` command is on your PATH.
 
-```
-/init    — new project with no code yet
-/setup   — existing project (auto-detects your stack)
-```
-
-That's it. Praxis is ready.
+> You need a Claude account (claude.ai) and an active subscription or API key. The CLI uses the same account as the VSCode extension.
 
 ---
 
-## The skills
+### Step 1 — Download and extract
 
-| Skill | What it does |
-|-------|-------------|
-| `/init` | New project — interviews you, recommends a stack, writes `CLAUDE.md` + `ARCHITECTURE.md` as a blueprint |
-| `/setup` | Existing project — scans codebase, asks proportional questions, writes `CLAUDE.md` + `ARCHITECTURE.md` |
-| `/triage` | Triage — classifies any change, assesses risk, creates a CR item |
-| `/spec` | Specification — drafts, reviews (3 perspectives), and approves a spec |
-| `/plan` | Planning — translates spec into a layered blueprint with wave execution order |
-| `/build` | Implementation — builds layer by layer, runs tests at each wave |
-| `/audit` | Review — 3-perspective post-build review, resolves blockers autonomously |
-| `/ship` | Closure — verifies ACs, captures lessons, writes feed-forward, closes CR |
-| `/flow` | Full pipeline — runs spec → plan → build → audit → ship uninterrupted |
-| `/craft` | Ad-hoc — implement, review, refactor, or debug outside the CR lifecycle |
-| `/help` | Explains how the system works |
+Download `sdm-skill-pack.zip` from the course materials and extract it anywhere on your machine:
+
+```
+~/Downloads/sdm-skill-pack/
+```
+
+### Step 2 — Add the marketplace (once per machine)
+
+Open a terminal, start the Claude Code CLI, and register the marketplace. This persists across all your projects:
+
+```bash
+claude    # opens the Claude Code CLI
+```
+
+Then inside the CLI:
+
+```
+/plugin marketplace add ~/Downloads/sdm-skill-pack
+```
+
+Adjust the path to wherever you extracted the ZIP. You should see: *"Successfully added marketplace: comocom"*.
+
+### Step 3 — Install the plugin (once per machine)
+
+Open your project in VSCode with the Claude Code extension, then type:
+
+```
+/plugin install sdm@comocom
+```
+
+When prompted, choose **Install for you (user scope)** — this makes all skills available in every project on your machine, without having to reinstall per project.
+
+### Step 4 — Start working
+
+No setup required. Start your first CR:
+
+```
+/intake  describe your change or incident here
+/cr      CR-0001
+```
+
+The plugin reads your project's `CLAUDE.md` (if it exists) for conventions and architecture context, and infers the technology stack from the codebase automatically.
 
 ---
 
-## Configuration (`CLAUDE.md`)
+### Updating to a newer version
 
-`/setup` and `/init` write this automatically. You can edit it manually.
+When a new version is released:
+
+1. Download the new ZIP and extract it to the same location, replacing the old files.
+2. Open Claude Code and run:
 
 ```
-# Software projects (written by /setup and /init automatically):
-Praxis Platform:     python-fastapi      # e.g. python-fastapi, typescript-nestjs, go-gin
-Praxis Domain:       software            # software | content | research | strategy | general
-Praxis Gates:        spec=on, plan=on, review=on, lessons=on
-Praxis TestCommand:  pytest tests/ -v    # exact command — used verbatim by /build and /craft
-Praxis TestRunner:   pytest              # runner name — used by /plan for skeleton generation
-Praxis Language:     python              # language — used for idioms, grep patterns, code style
-Praxis SourceRoot:   src/               # main source directory — scopes all file searches
-Praxis FileExt:      *.py               # file extension — used in grep commands
-Praxis IsolationKey: tenant_uid         # data isolation field, or "none"
-
-# Non-software projects (content, research, strategy, general):
-Praxis Domain:       content
-Praxis Gates:        spec=on, plan=on, review=on, lessons=on
+/plugin install sdm@comocom
 ```
 
-**Domains:** `software` gets a full technical spec. `content`, `research`, `strategy`, `general` get a Plan Brief — 8 focused questions instead of a tech spec. Non-software projects omit all stack-specific fields.
-
-**Gates:** turn off what you don't need. A personal script can run `spec=off, plan=off, review=off`. A production service keeps everything on.
+> **Note:** Updates are detected by version number. Each new release has a higher version in `plugin.json`, so `/plugin install` will pick up the change automatically.
 
 ---
 
-## CR lifecycle
+### For instructors — building the ZIP
 
+From the repo root:
+
+```bash
+zip -r sdm-skill-pack.zip .claude-plugin/ sdm-skill-pack/ --exclude "*.git*"
 ```
-OPEN → SPEC_DRAFT → SPEC_REVIEWED → SPEC_APPROVED
-     → PLAN_READY → IMPLEMENTING → REVIEWING → CLOSED
-```
 
-Each skill checks state before running and tells you if something is out of order.
-
-**CR-IDs** are incremental: `CR-0001`, `CR-0042`. Generated automatically by `/triage`.
+Upload `sdm-skill-pack.zip` to your course platform. Students download and follow the steps above.
 
 ---
 
-## Rigor levels
+## The Lifecycle
 
-`/triage` classifies automatically — you rarely need to set this manually.
+```
+Intake → Spec → Plan → Build → Review → Close
+```
 
-| Flag | When to use |
-|------|------------|
-| `--rigor fast` | Skip spec for bugs/fixes, go straight to build |
-| `--rigor standard` | Default — triage decides based on type |
-| `--rigor full` | Force full spec + plan regardless of type |
+Every change request (CR) passes through all six stages. Run them individually or use `/cr` to run the full pipeline automatically.
+
+| Stage | Skill | Role |
+|---|---|---|
+| 1 — Intake | `/intake` | Technical Triage Lead |
+| 2 — Spec | `/spec` | Domain Analyst + Architect + Security |
+| 3 — Plan | `/plan` | Technical Architect |
+| 4 — Build | `/build` | Senior Engineer |
+| 5 — Review | `/review` | Architect + Security + QA (parallel) |
+| 6 — Close | `/close` | Tech Lead |
+| — | `/cr` | Automated pipeline: resolves business decisions upfront, then runs 2–6 uninterrupted |
+
+### CR State Machine
+
+```
+OPEN → SPEC_DRAFT → SPEC_REVIEWED → SPEC_APPROVED → PLAN_READY → IMPLEMENTING → REVIEWING → CLOSED
+```
+
+Each skill gate-checks the CR state before proceeding. Running out of sequence produces a clear error with the correct next step.
+
+### Track Model
+
+| Track | Trigger | Depth |
+|---|---|---|
+| Standard | Normal severity | Full depth at every stage |
+| Fast | High severity | Compressed spec (lean sections only) |
+| Incident | Critical severity | Spec and Plan embedded in adjacent stages; containment before code |
 
 ---
 
-## Feed-forward
+## Specialist Skills
 
-`/ship` writes to `specs/feed-forward.md`. `/triage` reads the last 3 entries and surfaces anything relevant to the new CR. Learning from one CR flows into the next automatically.
+Callable independently or dispatched by lifecycle skills during review.
+
+| Skill | Expertise |
+|---|---|
+| `/sw-architect` | Architecture review, boundary violations, structural compliance |
+| `/domain-analyst` | Spec completeness, acceptance criteria quality, edge case detection |
+| `/security-engineer` | Vulnerability assessment, isolation audit, auth design |
+| `/engineer` | Implementation, component writing, debugging |
+| `/qa-engineer` | Test generation, coverage review, adversarial thinking |
 
 ---
 
-## Project structure after setup
+## How a CR Flows
+
+**Step by step:**
+```
+/intake   Users need to upload profile photos. Max 5MB, JPEG/PNG only.
+/spec     CR-0001
+/plan     CR-0001
+/build    CR-0001
+/review   CR-0001
+/close    CR-0001
+```
+
+**Or automated — let Claude handle it:**
+```
+/intake   Users need to upload profile photos. Max 5MB, JPEG/PNG only.
+/cr       CR-0001
+```
+
+`/cr` resolves all open business questions upfront in a clarification loop, then runs the full pipeline uninterrupted. Technical decisions are made by Claude — it informs you of the choices taken and why, but never asks you to make them. The only stop after the clarification loop is a business question that could not have been anticipated.
+
+---
+
+## Stack and Architecture Support
+
+The plugin is fully stack and architecture agnostic. It does not prescribe a specific technology, framework, or architecture pattern. Instead:
+
+- **Stack** is inferred from the project's codebase (language, dependencies, directory structure)
+- **Architecture** is read from the project's `CLAUDE.md` if documented, or inferred from code structure
+- **Engineering principles** (separation of concerns, dependency direction, test strategy) are universal and applied by all skills
+
+The plugin provides the **controlled development process**. Your project provides the **technical decisions**.
+
+---
+
+## Repository Structure
 
 ```
-CLAUDE.md                  ← Praxis config
-ARCHITECTURE.md            ← Project snapshot (re-run /setup when architecture changes)
-specs/
-  cr/
-    BACKLOG.md             ← All open CRs
-    CR-0001.cr.md          ← CR item
-    CR-0001.spec.md        ← Specification
-    plans/
-      CR-0001.plan.md      ← Implementation plan
-  lessons-learned.md
-  feed-forward.md
-.claude/
-  skills/                  ← Praxis skills (installed by install.sh)
+sdm-skill-pack/
+├── .claude-plugin/
+│   └── plugin.json           ← Plugin manifest
+├── doctrine/                 ← Process doctrine — universal rules for the lifecycle
+│   ├── engineering-principles.md
+│   ├── directive-execution-principle.md
+│   ├── artifact-contracts.md
+│   ├── lifecycle-stage-rules.md
+│   ├── contract-impact-rules.md
+│   ├── review-severity-model.md
+│   ├── finding-classification-rules.md
+│   ├── evidence-and-citation-rules.md
+│   ├── implementation-planning-rules.md
+│   ├── spec-quality-rules.md
+│   ├── testing-quality-rules.md
+│   ├── lessons-learned-rules.md
+│   └── backlog-persistence-rules.md
+└── skills/
+    ├── intake/         ← Stage 1: /intake
+    ├── spec/           ← Stage 2: /spec
+    ├── plan/           ← Stage 3: /plan
+    ├── build/          ← Stage 4: /build
+    ├── review/         ← Stage 5: /review
+    ├── close/          ← Stage 6: /close
+    ├── cr/             ← Automated pipeline: /cr
+    ├── sw-architect/   ← Specialist: /sw-architect
+    ├── domain-analyst/ ← Specialist: /domain-analyst
+    ├── security-engineer/ ← Specialist: /security-engineer
+    ├── engineer/       ← Specialist: /engineer
+    └── qa-engineer/    ← Specialist: /qa-engineer
 ```
+
+Each skill bundles its own copies of the doctrine files it needs in `references/`. Skills are self-contained.
+
+When doctrine changes, update the source in `doctrine/` then sync to the relevant skill `references/` folders.
+
+---
+
+## Versioning
+
+`2.0.0` — Stack and architecture agnostic. Removed stack doctrine files, setup skill, and architecture-specific doctrine. Added universal engineering principles. Skills infer stack from codebase and read architecture from `CLAUDE.md`.
+
+`1.1.0` — Platform-agnostic model. Stack doctrine introduced (`stack-python-fastapi`, `stack-flutter`). Setup skill added. `backend-engineer` replaced by `engineer`. All skills renamed to short form.
+
+`1.0.0` — Initial release. Full SDM lifecycle (6 stages) + 5 specialist skills. Python/FastAPI only.

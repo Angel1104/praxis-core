@@ -25,14 +25,16 @@ Before doing anything, read your bundled references:
 - `references/lifecycle-stage-rules.md` — gate checks, state machine, proportionality rules
 - `references/artifact-contracts.md` — required plan artifact format
 - `references/implementation-planning-rules.md` — how to produce a sound plan
-- `references/architecture-principles.md` — layer structure and dependency rules for the blueprint
-- `references/testing-quality-rules.md` — test skeleton structure, coverage requirements, naming conventions
+- `references/proportionality-rules.md` — scope assessment and depth calibration
+
+**Read the project's `CLAUDE.md` if it exists for project conventions and architecture context.
+Infer the technology stack from the project's codebase (language, framework, dependencies, directory structure).**
 
 ---
 
 ## Input
 
-`$ARGUMENTS` — the CR-ID. Example: `CR-0042`
+`$ARGUMENTS` — the CR-ID. Example: `260315-142300`
 
 ---
 
@@ -43,14 +45,9 @@ Before doing anything, read your bundled references:
    Wait for the answer, then continue.
 
 2. Read the CR item at `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found for [cr-id]. Run `/triage` first."
+   > "No CR item found for [cr-id]. Run `/intake` first."
 
-3. Read `CLAUDE.md` — check `Praxis Gates:`. If `plan=off`:
-   > "Plan gate is disabled for this project (`Praxis Gates: plan=off` in `CLAUDE.md`).
-   > Set CR state to `PLAN_READY` and proceed with `/build [cr-id]`."
-   Update CR state to `PLAN_READY`. Stop.
-
-4. Check CR state is `SPEC_APPROVED`. If not:
+3. Check CR state is `SPEC_APPROVED`. If not:
    - `OPEN` or `SPEC_DRAFT` → "Spec not yet approved. Complete `/spec [cr-id]` first."
    - `PLAN_READY` → "Plan already exists for this CR. Check `specs/cr/plans/<cr-id>.plan.md`."
    - `IMPLEMENTING` or later → "This CR is already past the planning stage."
@@ -63,12 +60,12 @@ Before doing anything, read your bundled references:
 ## Phase 1: Context Loading (silent — no output)
 
 1. Read the full approved spec
-2. Read the full CR item (note the rigor level)
-3. Read `CLAUDE.md` — extract `Praxis Platform`, `Praxis TestCommand`, `Praxis TestRunner`, `Praxis SourceRoot`, `Praxis IsolationKey`
-4. Read `ARCHITECTURE.md` if it exists — use as codebase context instead of scanning source directories
-   - If `ARCHITECTURE.md` does not exist: scan `Praxis SourceRoot` (or `src/` if not set) and `tests/` as needed
-5. Load `references/stack-<platform>.md` if `Praxis Platform` is set — use its Build Sequence and Test Strategy
-6. Read existing code files only for components the plan will directly extend or reuse
+2. Read the full CR item
+3. Scan the existing codebase for patterns this CR extends or reuses:
+   - Core logic, models, and business rules
+   - Existing interfaces and abstractions
+   - Infrastructure and integration components
+   - Test structure and conventions
 
 Identify: is this CR extending an established pattern, or introducing something structurally new? That determines blueprint depth.
 
@@ -146,96 +143,83 @@ Ensure `specs/cr/plans/` directory exists.
 
 Write the plan to `specs/cr/plans/<cr-id>.plan.md`. See `references/artifact-contracts.md` for all required sections.
 
-### Layer order (inside-out)
-
-The implementation always follows this layer sequence:
-
-```
-1. Domain layer      — models, ports, services, events, exceptions
-2. Application layer — commands and queries
-3. Outbound adapters — repositories, gateways, publishers
-4. Inbound adapters  — routers, schemas, event handlers
-5. Config / DI       — new bindings and settings
-6. Migrations        — schema changes (if any)
-```
-
-### Wave decomposition (within each layer)
-
-Within each layer, decompose the work into **atomic units** and group them into **waves**:
-
-1. List every component to implement in this layer (one unit = one file or one coherent change).
-2. For each unit, declare its dependencies on other units (within or across layers).
-3. Group units into waves using this rule:
-   - **Wave 1**: units with no dependencies
-   - **Wave N**: units whose dependencies are all in waves 1 through N-1
-4. Units in the same wave are independent and can be implemented in parallel.
-5. Units in later waves wait for their dependencies to be complete and verified.
-
-**Failure cascade rule:** If a unit fails, all units that depend on it are skipped automatically. Record this in the build summary.
-
-**Granularity guide:**
-- Simple CRUD component → 1 unit
-- Complex service with multiple methods → split by method boundary
-- Migration + model update → always separate units (migration is always Wave 1 within its layer)
-
-Every unit must be linked to ≥1 acceptance criterion from the spec. Units not traceable to an AC must not appear in the plan.
-
-### Wave plan format (per layer)
-
-```
-### Layer: [layer name]
-
-| Unit | Description | Depends on | AC |
-|------|-------------|------------|----|
-| U1 | [component name — file path] | — | AC-1 |
-| U2 | [component name — file path] | U1 | AC-2 |
-| U3 | [component name — file path] | — | AC-1, AC-3 |
-
-Wave 1: U1, U3 (parallel)
-Wave 2: U2
-```
+The blueprint sequences implementation according to the project's architecture, working from core logic outward to infrastructure and integration points. The specific layer order depends on the project's conventions as defined in `CLAUDE.md`.
 
 Every component named in the blueprint must be justified by the spec. Components not required by the spec must not appear.
 
-See `references/architecture-principles.md` for the layer structure and directory conventions.
 See `references/implementation-planning-rules.md` for blueprint depth, migration rules, and risk re-assessment rules.
 
 ---
 
-## Phase 6: Generate Test Skeletons
+## Phase 6: Generate Test Strategy and Skeletons
 
-Create `tests/<cr-id>/` directory.
+**Discover and integrate** — do not create a new test directory per CR by default.
 
-For each acceptance criterion in the spec, generate a test skeleton. Tests are designed to fail until Build implements the code.
+1. Scan the existing test structure — identify where tests for the affected components already live.
+2. If tests for the affected component exist: plan new test cases to be added to those existing files.
+3. If the CR introduces genuinely new components with no existing test coverage: plan new test files in the appropriate location (following the project's unit/integration/e2e separation).
+4. Reference the CR-ID in a comment or docstring on new test cases, not in a folder name.
 
-Use `Praxis TestRunner` and `Praxis Language` from CLAUDE.md to write skeletons in the correct language and runner style:
+See `references/proportionality-rules.md` and `references/implementation-planning-rules.md` for the full test placement rules.
 
-| `Praxis TestRunner` | Skeleton style |
-|-----------------|---------------|
-| `pytest` | `class TestCR...: / async def test_...():` with `raise NotImplementedError` |
-| `jest` / `vitest` | `describe('CR-...', () => { it('...', async () => { throw new Error('not implemented') }) })` |
-| `rspec` | `RSpec.describe '...' do / it '...' do / raise NotImplementedError / end / end` |
-| `go test` | `func TestCR<id>_<ac>(t *testing.T) { t.Fatal("not implemented") }` |
-| `flutter test` | `test('...', () { throw UnimplementedError(); });` |
-| other | Match the runner's standard test structure |
+For each acceptance criterion in the spec, at least one test case must exist (new or added to an existing file). Tests are designed to fail until Build implements the code.
 
-If `Praxis TestRunner` is not set: use generic pseudocode with GIVEN/WHEN/THEN comments and a clear "not implemented" marker.
+Every new test skeleton must have:
+- A name that maps to an acceptance criterion or error scenario
+- GIVEN / WHEN / THEN structure in the test body (as comments or sections)
+- A mechanism to force failure that is removed when the test is implemented during Build
 
-Each skeleton must cover:
-1. **Happy path** — AC satisfied with valid inputs
-2. **Error scenario** — at least one failure case per AC
-3. **Isolation test** — if `Praxis IsolationKey` is set and the CR touches data access:
-   - Context A (`<Praxis IsolationKey>=context-a`) creates data
-   - Context B (`<Praxis IsolationKey>=context-b`) attempts to access it → must fail or return nothing
-   - This test is mandatory even when not explicitly in the ACs
+Required test categories (from `references/implementation-planning-rules.md`):
+- Happy path per acceptance criterion
+- Error path per error scenario in the spec
+- Data isolation tests where applicable (e.g., multi-tenant, role-based access)
 
 For a refactor CR: skip test generation. Note that existing tests cover the behaviour.
 
-Proportionality guidance is in `references/implementation-planning-rules.md`.
+Proportionality guidance is in `references/implementation-planning-rules.md` and `references/proportionality-rules.md`.
 
 ---
 
-## Phase 7: Handoff
+## Phase 7: Plan Review (proportional perspectives)
+
+Once the blueprint and test strategy are complete, assess the scope and decide the review depth. See `references/proportionality-rules.md`.
+
+**Available perspectives:**
+
+**Structural soundness perspective** (sw-architect):
+- Does the blueprint respect the project's architectural boundaries?
+- Is the implementation sequence logical — are dependencies built before dependents?
+- Are components properly scoped — no over-engineering, no missing pieces?
+- Does every component in the blueprint trace back to the spec?
+- Are migration and rollback implications addressed where applicable?
+
+**Test adequacy perspective** (qa-engineer):
+- Is there at least one test skeleton per acceptance criterion?
+- Are error scenarios from the spec covered?
+- Is the test strategy appropriate for the change (unit/integration/e2e split)?
+- Are data isolation tests included where the project enforces access boundaries?
+- Are the test skeletons designed to fail until implementation?
+
+**Depth decision:**
+- Isolated fix with a straightforward plan → one perspective (structural soundness or test adequacy, whichever is more relevant)
+- Contained feature or moderate change → two perspectives in parallel
+- Broad change, multiple layers, or new patterns → two perspectives in parallel
+
+Spawn the selected perspective agents using the Agent tool. Apply the shared severity model from `references/review-severity-model.md` to all findings.
+
+### Resolve findings
+
+Resolve all BLOCKER and HIGH findings autonomously. These are plan-level issues — fix the blueprint or test skeletons, not code.
+
+Ask the human only when:
+- A finding requires a scope trade-off or business decision
+- The blueprint cannot satisfy all acceptance criteria without expanding scope
+
+Repeat review until no blockers remain.
+
+---
+
+## Phase 8: Handoff
 
 Update `specs/cr/<cr-id>.cr.md`:
 - Status: `SPEC_APPROVED` → `PLAN_READY`
@@ -247,8 +231,9 @@ Tell the developer:
 > **Plan ready for CR-[cr-id].**
 >
 > Approach: [one-sentence summary of selected option]
-> Layers affected: [list]
-> Test skeletons: [N] generated in `tests/[cr-id]/`
+> Components: [list]
+> Test strategy: [N] test cases planned ([added to existing / new files] in `tests/...`)
+> Plan review: PASS — [summary of what was checked]
 >
 > [If risks found: "Risk noted: [summary]. Decision recorded: [what was decided]."]
 > [If follow-up items found: "I've noted [N] items to address in follow-up CRs."]
@@ -276,4 +261,4 @@ Do not escalate for: technical pattern selection, layer placement decisions, tes
 | `references/lifecycle-stage-rules.md` | Gate checks, state machine, mandatory human gate at Plan |
 | `references/artifact-contracts.md` | Required plan artifact format and all required fields |
 | `references/implementation-planning-rules.md` | Approach selection, blueprint structure, migration rules, proportionality |
-| `references/architecture-principles.md` | Layer structure and dependency rules for structuring the blueprint |
+| `references/proportionality-rules.md` | Scope assessment, depth calibration, test placement rules |

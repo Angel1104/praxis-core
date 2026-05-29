@@ -69,16 +69,16 @@ Non-blocking findings (MEDIUM / LOW) are recorded as advisories in the review re
 When assigning severity, reason from impact and exploitability, not from code aesthetics.
 
 **CRITICAL examples:**
-- Cross-tenant data access possible without authentication
+- Cross-boundary data access possible without authentication
 - SQL injection via unsanitised input
 - Hardcoded secret in committed code
-- Domain layer directly calling a database without port abstraction (complete architecture collapse)
+- Core logic directly calling infrastructure without abstraction (complete architecture collapse)
 
 **HIGH examples:**
-- Missing tenant_uid filter on a repository method
-- Application layer importing from adapters (architectural violation)
+- Missing access boundary filter on a data access method
+- Inner layer importing from outer layer (architectural violation)
 - Authentication check missing on a write endpoint
-- Domain event not published for a state-changing operation
+- Side effect not decoupled for a state-changing operation
 
 **MEDIUM examples:**
 - Error case not handled (returns 500 instead of meaningful error)

@@ -68,15 +68,15 @@ Does not include: anything that should be `architecture`, `security`, or `testin
 Assign when: the finding creates or exposes a security risk.
 
 Includes:
-- Data isolation gap (query without isolation key, or cross-context access path)
+- Data isolation gap (query without access boundary scoping, or cross-boundary access path)
 - Authentication check missing
 - Authorisation check missing or insufficient
-- Input not validated at adapter boundary
+- Input not validated at the boundary
 - Secret or credential in code
 - Data exposure (returning more data than the caller is authorised to see)
 - Injection risk (SQL, command, path traversal)
 
-Note: a missing isolation key filter is always classified as `security`, not `architecture`, because the risk is data exposure, not structural.
+Note: a missing access boundary filter is always classified as `security`, not `architecture`, because the risk is data exposure, not structural.
 
 ### `testing`
 

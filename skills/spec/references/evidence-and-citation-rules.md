@@ -25,10 +25,10 @@ Non-blocking findings (MEDIUM or LOW) must include at minimum: location, stateme
 When citing a violation of project doctrine, reference the specific rule:
 
 ```
-Violation: boundary-rules.md — "Domain imports from adapters"
-Location: src/domain/services/user_service.py, line 4
-Code: from adapters.outbound.persistence import PostgresUserRepository
-Remediation: Define a UserRepository port in domain/ports/outbound/user_repository.py
+Violation: engineering-principles.md — "Dependencies point inward"
+Location: src/core/services/user_service.py, line 4
+Code: from infrastructure.persistence import PostgresUserRepository
+Remediation: Define an abstract UserRepository interface in the core layer
              and inject it via the constructor. Remove the direct import.
 ```
 
@@ -63,7 +63,7 @@ Remediation: Replace with: "When payment processing fails, the system returns HT
 
 For code findings:
 ```
-src/domain/services/user_service.py:47
+src/core/services/user_service.py:47
 ```
 
 For spec findings:

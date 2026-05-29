@@ -1,0 +1,30 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "sdm-skill-pack",
+  "owner": {
+    "name": "comocom",
+    "email": "hello@comocom.io"
+  },
+  "plugins": [
+    {
+      "name": "sdm",
+      "description": "Spec-Driven Development lifecycle skills. Governs the full engineering change lifecycle: Intake → Spec → Plan → Build → Review → Close. Includes specialist skills for architecture, security, domain analysis, implementation quality, and testing. Stack and architecture agnostic.",
+      "version": "2.1.0",
+      "source": "./",
+      "skills": [
+        "./skills/intake",
+        "./skills/spec",
+        "./skills/plan",
+        "./skills/build",
+        "./skills/review",
+        "./skills/close",
+        "./skills/cr",
+        "./skills/engineer",
+        "./skills/domain-analyst",
+        "./skills/security-engineer",
+        "./skills/sw-architect",
+        "./skills/qa-engineer"
+      ]
+    }
+  ]
+}

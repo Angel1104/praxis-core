@@ -13,20 +13,15 @@ Every spec must contain all of the following. A section may be brief if the CR i
 | Section | What it must cover |
 |---|---|
 | Problem statement | What is broken or missing, for whom, and why it matters. Explicit out-of-scope subsection. |
-| Bounded context | Which domain, which entities owned, which events published, which contexts depended upon |
-| Inbound ports | Every operation exposed. Auth required. Roles permitted. Read-RBAC per role. |
-| Outbound ports | Every external dependency. Method signatures with the project's isolation key (from `Praxis IsolationKey`) as first param if applicable. Bridge/Gateway flag. |
-| Adapter contracts | Concrete implementations: endpoints, schemas, operation ordering for multi-step commands |
-| Data isolation strategy | How the isolation key (`Praxis IsolationKey`) is resolved, scoped, and validated. Mark N/A if `Praxis IsolationKey: none`. |
-| Security defaults | Rate limit fallback policy, JWT expiry, read-RBAC summary, operation ordering — no TBD |
+| Scope | Which parts of the system are affected, what boundaries exist, which external systems are involved |
+| Interfaces | Operations exposed and consumed. Authentication and authorization requirements where applicable. |
+| Implementation contracts | Concrete technical details: endpoints, schemas, data structures, operation ordering for multi-step operations |
+| Security considerations | Authentication, authorization, data protection, input validation — as applicable to the project |
 | Acceptance criteria | GIVEN/WHEN/THEN format. Testable. Specific. No vague language. |
-| Error scenarios | Auth failures (5 mandatory rows). Domain errors with domain exception names, not HTTP codes. |
-| Side effects | Domain events triggered, consumers, sync/async, failure policy |
-| Non-functional requirements | Latency targets, throughput, data volume, rate limits, idempotency TTL |
-| Contract Impact | CONDITIONAL. If any public contract surface is modified: document the
-                   surfaces, breaking yes/no, known dependents, and the compatibility decision.
-                   If breaking: consumer CRs must be created and listed. Mark `N/A` with
-                   one-sentence justification only when no contract surface is touched. |
+| Error scenarios | Expected failure modes with defined behavior. Domain-level error descriptions, not transport-specific. |
+| Side effects | External effects triggered by the operation: notifications, events, integrations. How failures are handled. |
+| Non-functional requirements | Performance targets, throughput, data volume, rate limits — as applicable |
+| Contract Impact | CONDITIONAL. If any public contract surface is modified: document the surfaces, breaking yes/no, known dependents, and the compatibility decision. If breaking: consumer CRs must be created and listed. Mark `N/A` with one-sentence justification only when no contract surface is touched. |
 
 ---
 
@@ -53,15 +48,12 @@ The following are BLOCKER conditions:
 - Any `BUSINESS DECISION REQUIRED` marker remains unfilled
 - Any acceptance criterion that cannot be verified with a deterministic test
 - Any vague language that can be interpreted more than one way
-- Data isolation not addressed for any data access path (when `Praxis IsolationKey` is set)
-- Auth requirement undefined for any write endpoint
-- Error scenarios missing the 5 mandatory auth failure rows
-- Security defaults section has any blank or "TBD" field
-- Port interface defined with adapter types in the method signature
+- Security considerations not addressed when the change involves authentication, authorization, or data access
+- Error scenarios missing expected failure modes for the operations being changed
+- Interface defined with implementation-specific details instead of abstract contracts
 - A public contract surface is modified AND no `## Contract Impact` section is present
 - `## Contract Impact` records a breaking change AND no consumer CRs have been created
-- `## Contract Impact` contains a `BUSINESS DECISION REQUIRED` marker — compatibility
-  decision not yet recorded
+- `## Contract Impact` contains a `BUSINESS DECISION REQUIRED` marker — compatibility decision not yet recorded
 
 ---
 
@@ -86,9 +78,9 @@ Spec depth is proportional to CR complexity:
 | CR type | Expected depth |
 |---|---|
 | New module or domain concept | All sections fully populated |
-| New endpoint on existing pattern | Problem statement, ports, adapter contracts, ACs, errors |
-| Security or tenant isolation fix | Problem statement, tenant isolation, ACs, error scenarios |
-| Refactor, structural improvement | Problem statement, bounded context, ACs |
+| New endpoint on existing pattern | Problem statement, interfaces, implementation contracts, ACs, errors |
+| Security or access control fix | Problem statement, security considerations, ACs, error scenarios |
+| Refactor, structural improvement | Problem statement, scope, ACs |
 | Incident follow-up | Problem statement, root cause, ACs, errors |
 
 A section that is genuinely not applicable should be marked `N/A — not applicable to this CR type` with a one-sentence justification. It must not be blank.
@@ -101,14 +93,13 @@ Before declaring a spec ready for review:
 
 - [ ] No placeholder text (no TBD, TODO, fill in later)
 - [ ] No ambiguous language
-- [ ] All ports defined as interfaces, not implementations
-- [ ] Data isolation addressed for every data access path (when `Praxis IsolationKey` is set)
+- [ ] All interfaces defined abstractly, not tied to specific implementations
 - [ ] Every AC follows GIVEN/WHEN/THEN
 - [ ] Every error scenario has an explicit behavior defined
-- [ ] Side effects are domain events — not direct service calls
-- [ ] Security defaults section fully populated
-- [ ] Auth failures section present with all 5 rows
-- [ ] Read-RBAC defined for every port that returns data
-- [ ] Operation ordering defined for every multi-step command
+- [ ] Side effects are decoupled from core logic
+- [ ] Security considerations addressed where applicable
+- [ ] Authentication and authorization failure scenarios defined where applicable
+- [ ] Access control defined for data-returning operations where applicable
+- [ ] Operation ordering defined for every multi-step operation
 - [ ] Contract Impact section present (populated or explicitly N/A with justification)
 - [ ] If breaking change: consumer CRs created and listed with CR-IDs

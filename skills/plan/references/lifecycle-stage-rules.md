@@ -6,7 +6,7 @@
 Intake → Spec → Plan → Build → Review → Close
 ```
 
-Every Change Request passes through all six stages. Track and severity determine the **depth** of each stage, not which stages run.
+Every Change Request passes through all six stages. Track and severity inform depth, but **each stage assesses the actual scope of the change independently** and calibrates its own depth accordingly. See `proportionality-rules.md` for the shared proportionality principle and depth guidance per stage.
 
 ---
 
@@ -32,24 +32,6 @@ Every Change Request passes through all six stages. Track and severity determine
 
 **Severity is inferred by the system, not requested by the human.** If the human's framing implies urgency or production impact, classify accordingly and confirm in the Intake gate.
 
-### Rigor levels and pipeline by CR type
-
-The rigor level is either inferred from CR type (standard behaviour) or explicitly set by the developer via `--rigor` flag at intake.
-
-| Type | Rigor: fast | Rigor: standard (default) | Rigor: full |
-|------|------------|--------------------------|------------|
-| `feature` | spec lean (3 sections) → build → review → close | spec full → plan → build → review → close | spec full (all sections) → plan → build → review → close |
-| `fix` | build → review → close (no spec) | spec lean (3 sections) → build → review → close | spec full → plan → build → review → close |
-| `refactor` | build → review → close (no spec) | spec lean (3 sections) → build → review → close | spec full → plan → build → review → close |
-| `security` | spec lean → build → review → close | spec full → plan → build → review → close | spec full → plan → build → review → close |
-| `incident` | build (containment first) → review → close | build (containment first) → review → close | spec compressed → build → review → close |
-
-**Spec lean** = 3 sections only: Problem Statement, Acceptance Criteria, Error Scenarios.
-**Spec full** = all sections per `spec-quality-rules.md` proportionality table.
-**No spec** (fast/fix, fast/refactor) = CR item contains the intent and ACs directly; build proceeds from that.
-
-The rigor level is recorded in the CR item and governs every downstream stage.
-
 ---
 
 ## Stage rules
@@ -67,7 +49,7 @@ The rigor level is recorded in the CR item and governs every downstream stage.
 **Standard and Fast tracks:**
 - Reads the confirmed CR item
 - Drafts a spec proportional to the CR's complexity
-- Standard track: runs full Spec Review (domain correctness + structural integrity + security exposure — three perspectives in sequence, shared context)
+- Standard track: runs Spec Review with proportional perspectives (1–3 depending on scope; see `proportionality-rules.md`)
 - Fast track: runs compressed Spec Review (single-pass, focused on scope and acceptance criteria)
 - Resolves all BLOCKER findings autonomously; asks human only for business decisions
 - Does not advance until spec state reaches `SPEC_APPROVED`
@@ -95,19 +77,23 @@ Contract Impact Analysis is skipped on the Incident track.
 - Identifies valid implementation approaches and presents trade-offs
 - Recommends one approach clearly
 - **Mandatory human gate: human confirms the recommended approach**
-- Generates the layered blueprint and test skeletons after confirmation
+- Generates the blueprint and test skeletons after confirmation
 - Re-assesses risk at implementation level; escalates to human if a new HIGH risk surfaces
+- Runs Plan Review with proportional perspectives (1–2 depending on scope; see `proportionality-rules.md`): sw-architect for structural soundness, qa-engineer for test adequacy
+- Resolves all BLOCKER findings autonomously; asks human only for scope decisions
+- Does not advance until plan review passes
 
 **Incident track:**
 - Plan is compressed and embedded into the Build preamble as a containment-then-fix framing
-- Covers: immediate containment steps, scope of the minimal fix, layer affected
+- Covers: immediate containment steps, scope of the minimal fix, affected components
 - No standalone Plan artifact on the Incident track; Build records the approach taken
+- No Plan Review on the Incident track
 
 ### Stage 4: Build
 
 - Reads plan, test skeletons, spec, and CR item
-- Implements layer by layer: domain → application → outbound adapters → inbound adapters → config
-- Runs tests after each layer; does not advance if a layer fails
+- Implements step by step following the plan's sequence
+- Runs tests after each step; does not advance if a step fails
 - Does not invent structural decisions not covered by the plan; escalates material deviations
 - Critical track opens with containment advice before writing any code
 - Records all deviations from the plan in the Build summary
@@ -115,7 +101,7 @@ Contract Impact Analysis is skipped on the Incident track.
 ### Stage 5: Review (Post-Build)
 
 - Evaluates the completed implementation, not the design
-- Runs three mandatory perspectives in parallel: structural integrity, security exposure, operational impact
+- Runs proportional review perspectives (1–3 depending on scope; see `proportionality-rules.md`): structural integrity, security exposure, operational impact
 - Applies the shared severity model (see `review-severity-model.md`)
 - Produces a clear verdict: `PASS` or `BLOCKED`
 - All BLOCKER findings must be resolved before advancing to Close
@@ -183,7 +169,7 @@ OPEN → SPEC_APPROVED → PLAN_READY → IMPLEMENTING → REVIEWING → CLOSED
 |---|---|---|
 | Intake confirmation | Yes | — |
 | Plan approach selection | Yes | — |
-| Close confirmation | Yes | — |
+| Close confirmation | Yes (exception: `/cr` automated pipeline — human authorized full automation at invocation) | — |
 | Business decision during Spec review | No | Triggered when a BLOCKER requires human authority |
 | Risk escalation during Build | No | Triggered when material deviation or new HIGH risk surfaces |
 | BLOCKER resolution during Review | No | Triggered when a BLOCKER requires a business trade-off |

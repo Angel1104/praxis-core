@@ -14,8 +14,8 @@ A good plan:
 
 - Identifies the valid implementation approaches and states honest trade-offs between them
 - Recommends one approach clearly, with a rationale the human can evaluate
-- Sequences implementation in a layered order that respects architectural boundaries
-- Makes every required structural decision explicit (which ports, which adapters, which commands, which events)
+- Sequences implementation in an order that respects the project's architectural boundaries
+- Makes every required structural decision explicit (which components, which interfaces, which modules)
 - Defines the test strategy so that QA is not improvised during Build
 - Identifies migration and rollback implications before code is written
 - Names the checkpoints where progress must be verified before continuing
@@ -47,47 +47,39 @@ When only one valid approach exists, Plan states it directly without manufacturi
 
 ## Blueprint structure
 
-The implementation blueprint follows inside-out layer order:
+The implementation blueprint sequences work according to the project's architecture, working from core logic outward to infrastructure and integration points.
 
-```
-1. Domain layer
-   - New or modified entities, value objects, aggregates
-   - New or modified port interfaces
-   - New or modified domain services
-   - New or modified domain events
-   - New or modified domain exceptions
-
-2. Application layer
-   - New or modified commands (with handler structure)
-   - New or modified queries (with handler structure)
-
-3. Outbound adapters
-   - Repository implementations
-   - External API adapters and gateways
-
-4. Inbound adapters
-   - FastAPI router endpoints and schemas
-   - Event handlers
-
-5. Config / DI
-   - New bindings in the DI container
-   - New settings required
-```
+For each step in the sequence, the blueprint lists:
+- Components to create or modify
+- Their responsibility and how they relate to the spec
+- Dependencies on other components in the sequence
 
 Every component named in the blueprint must be justified by the spec. Components not required by the spec must not appear in the blueprint.
+
+The specific layer order and component types depend on the project's architecture as defined in its `CLAUDE.md` and project conventions. The principle is always: **build the core logic first, then connect it to the outside world.**
 
 ---
 
 ## Test strategy
 
-Plan defines the test strategy before implementation begins. Test skeletons are generated from acceptance criteria and placed in `tests/<cr-id>/`.
+Plan defines the test strategy before implementation begins.
 
-For every acceptance criterion in the spec, at least one test skeleton must exist.
+**Test placement — discover and integrate:**
 
-Required test categories for any change that touches data access:
+1. Scan the existing test structure — identify where tests for the affected components already live.
+2. Add new test cases to existing test files when coverage for the component exists.
+3. Create new test files only when the CR introduces genuinely new components with no existing test coverage.
+4. Follow the project's test organisation — respect the existing unit/integration/e2e separation.
+5. Reference the CR-ID in a comment or docstring on the new test cases, not in a folder name.
+
+See `proportionality-rules.md` for the full test placement principle.
+
+For every acceptance criterion in the spec, at least one test case must exist (new or added to an existing file).
+
+Required test categories:
 - Happy path (expected behaviour under normal conditions)
 - Error path (expected behaviour when the operation fails)
-- Tenant isolation (a second tenant must not access the first tenant's data through this code path)
+- Data isolation tests where applicable (e.g., multi-tenant, role-based access)
 
 Optional but expected for complex logic:
 - Edge cases identified in the spec

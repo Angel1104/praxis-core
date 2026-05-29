@@ -18,8 +18,6 @@ Required sections:
 | Type | `feature` / `fix` / `security` / `incident` / `refactor` |
 | Severity | `Critical` / `High` / `Normal` |
 | Track | `Incident` / `Fast` / `Standard` |
-| Rigor | `fast` / `standard` / `full` — set at intake via `--rigor` flag or inferred from type |
-| Pipeline | The exact stage sequence for this CR, e.g. `spec (lean) → build → review → close` |
 | Summary | One-line statement of the change |
 | Intent | What success looks like — confirmed by the human |
 | Assessment | Risk, blast radius, reversibility, impacted areas, dependencies |
@@ -75,7 +73,7 @@ Required sections:
 | Implementation goal | What the plan achieves, in one paragraph |
 | Recommended approach | The selected implementation strategy |
 | Rationale | Why this approach over the alternatives considered |
-| Wave plan (per layer) | For each layer: table of units with dependencies and linked ACs, grouped into waves. Format: \| Unit \| Description \| Depends on \| AC \| — followed by "Wave N: [units]" groupings |
+| Ordered steps | Implementation sequence, layer by layer |
 | Affected layers | Which layers and components are touched |
 | Interface implications | New or changed ports, adapters, commands, queries, events |
 | Test strategy | What types of tests, what coverage is expected |
@@ -83,9 +81,7 @@ Required sections:
 | Risks | Implementation-level risks not present in the spec |
 | Checkpoints | Where to stop and verify before proceeding |
 
-Test skeletons are also produced at Plan, stored in `tests/<cr-id>/`.
-
-**AC traceability rule:** Every unit in the wave plan must link to ≥1 acceptance criterion. Units not traceable to an AC must not appear. This ensures `/audit` can verify that all ACs have corresponding implementation units.
+Test skeletons or new test cases are also produced at Plan, placed according to the project's existing test structure. See `proportionality-rules.md` for test placement rules.
 
 ---
 

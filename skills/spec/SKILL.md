@@ -2,7 +2,7 @@
 name: spec
 description: >
   Produces a fully reviewed and approved specification for an open CR. Use after
-  /triage has produced a CR item. Accepts a CR-ID. Drafts the spec
+  engineering-intake has produced a CR item. Accepts a CR-ID. Drafts the spec
   proportional to the CR's complexity, runs multi-agent review (domain-analyst,
   sw-architect, security-engineer), resolves all blockers autonomously, and locks
   the approved spec. Asks the human only when a genuine business decision surfaces.
@@ -16,9 +16,9 @@ argument-hint: CR-ID
 **Role: Domain Analyst + Software Architect + Security Engineer**
 **Stage: Spec — second gate of the CR lifecycle**
 
-You produce an approved specification for the CR. You draft it, review it through three mandatory perspectives, resolve all blockers autonomously, and lock it when approved. You ask the human only when a genuine business decision cannot be inferred.
+You produce an approved specification for the CR. You draft it, review it through the appropriate perspectives, resolve all blockers autonomously, and lock it when approved. You ask the human only when a genuine business decision cannot be inferred.
 
-Depth is proportional to the CR. You decide how much each section needs.
+Depth is proportional to the CR. You assess the actual scope of the change and decide how much each section — and the review process — needs. See `references/proportionality-rules.md`.
 
 Before doing anything, read your bundled references:
 - `references/directive-execution-principle.md` — behavioral rules
@@ -36,43 +36,29 @@ Before doing anything, read your bundled references:
 
 2. Extract the CR-ID from `$ARGUMENTS`
 3. Locate `specs/cr/<cr-id>.cr.md`. If missing:
-   > "No CR item found. Run `/triage` first."
-4. Read `CLAUDE.md` — check `Praxis Gates:`. If `spec=off`:
-   > "Spec gate is disabled for this project (`Praxis Gates: spec=off` in `CLAUDE.md`).
-   > Set CR state to `SPEC_APPROVED` and proceed with `/plan [cr-id]`."
-   Update CR state to `SPEC_APPROVED`. Stop.
-5. Check CR state is `OPEN`. If:
+   > "No CR item found. Run `/intake` first."
+4. Check CR state is `OPEN`. If:
    - `SPEC_DRAFT` or `SPEC_REVIEWED` → continue from current state
    - `SPEC_APPROVED` → "Spec already approved. Run `/plan [cr-id]`."
    - `PLAN_READY` or later → "This CR is past the spec stage."
-5. Read the `Rigor` field from the CR item:
-   - `fast` + type `fix` or `refactor` → no spec file needed; ACs and intent are in the CR item itself. Set state to `SPEC_APPROVED` and tell the developer: "CR is `fix`/`refactor` with `--rigor fast` — no spec required. Proceed with `/build [cr-id]`." Stop.
-   - `fast` + type `feature` or `security` → produce lean spec (Problem Statement, Acceptance Criteria, Error Scenarios only).
-   - `standard` → use proportionality table from `references/spec-quality-rules.md`.
-   - `full` → produce full spec with all sections regardless of CR type.
-   - If `Rigor` field is absent, treat as `standard`.
-6. Check track from the CR item. For `Incident` track (regardless of rigor): produce a compressed problem-scope declaration (see §Compressed Spec below), then stop.
+5. Check track from the CR item. For `Incident` track: produce a compressed problem-scope declaration (see §Compressed Spec below), then stop.
 
 ---
 
 ## Phase 1: Context Loading (silent)
 
-1. Read the full CR item — type, severity, track, rigor, intent, assessment, decisions already made
-2. Read `CLAUDE.md` — check `Praxis Domain:` and `Praxis Gates:` lines
-3. Read `ARCHITECTURE.md` if it exists — use this as the project context instead of scanning `src/`
-   - If `ARCHITECTURE.md` does not exist: scan the main source directory for related patterns as needed
-4. Scan `specs/cr/` for related or dependent specs
-5. If `specs/lessons-learned.md` exists, read it and surface any entries relevant to this CR
-
-**Domain routing:**
-- If `Praxis Domain: software` (or absent) → proceed to Phase 2 (Technical Spec)
-- If `Praxis Domain: content | research | strategy | general` → proceed to Phase 2B (Plan Brief)
+1. Read the full CR item — type, severity, track, intent, assessment, decisions already made
+2. Scan `specs/cr/` for related or dependent specs
+3. Scan the codebase for components this CR touches or extends
+6. If `specs/lessons-learned.md` exists, read it (see `references/lessons-learned-rules.md` for the read protocol)
+   and surface any entries relevant to this CR (keyword match against CR title, domain, and affected components)
+   before proceeding.
 
 Decide proportionality: see `references/spec-quality-rules.md` proportionality table.
 
 ---
 
-## Phase 2: Draft the Spec (software domain)
+## Phase 2: Draft the Spec
 
 Update CR state to `SPEC_DRAFT`.
 
@@ -83,74 +69,9 @@ Annotation conventions:
 - `(inferred — verify)` — derived from context, flag for confirmation
 - `BUSINESS DECISION REQUIRED` — blocks approval until resolved
 
-Apply technical defaults from the stack reference (`references/stack-<platform>.md`) without asking. If no stack reference exists, apply defaults from `ARCHITECTURE.md` "Established Patterns" section. If neither exists, apply only what can be safely inferred from the CR description — flag anything uncertain with `(inferred — verify)`.
+Apply technical defaults appropriate to the project's stack and conventions (inferred from codebase and `CLAUDE.md`) without asking.
 
 For sections not applicable to this CR type: write `N/A — [one-sentence justification]`.
-
----
-
-## Phase 2B: Plan Brief (non-software domains)
-
-*Only for `Praxis Domain: content | research | strategy | general`.*
-
-Instead of a technical spec, produce a **Plan Brief** — a focused artifact that answers
-8 questions about the work before execution begins.
-
-Create `specs/cr/<cr-id>.spec.md` with this structure:
-
-```markdown
-# Plan Brief — CR-[cr-id]
-Status: DRAFT | APPROVED
-Date: [date]
-
-## 1. Problem
-What is the actual problem we're solving? (Not the solution — the problem.)
-[One paragraph. Challenge vague answers — "we need a document" is a solution, not a problem.]
-
-## 2. Goal
-What does success look like when this is done?
-[Concrete, observable outcome.]
-
-## 3. Audience
-Who is this for? What do they need from it?
-[Specific — not "stakeholders" but who exactly and what they need to do with the output.]
-
-## 4. Appetite
-How much effort is this worth? What is the time/effort budget?
-[Fixed budget: e.g. "2 hours", "one week", "one iteration". Not an estimate — a constraint.]
-
-## 5. Acceptance Criteria
-How will we know this is done and good enough?
-[3-5 specific, verifiable criteria. Each must be checkable without subjective judgment.]
-
-## 6. Constraints
-What must we work within? What is explicitly out of scope?
-[Hard limits: tools, formats, word counts, regulations, existing materials to reuse or avoid.]
-
-## 7. Core Assumption
-What is the single most important assumption this plan rests on?
-[The thing that, if wrong, would invalidate the whole approach.]
-
-## 8. Rabbit Holes to Avoid
-What could pull us off track? What are we explicitly NOT doing?
-[Known scope creep risks, tangents to decline, related work to defer.]
-```
-
-**Quality gate — challenge weak answers:**
-- "We need to update the docs" → ask: "What happens if we don't? Who is blocked and how?"
-- "Make it better" → ask: "Better how, measurable how, for whom?"
-- Appetite left blank → ask: "How much time is this worth? Name a number."
-- Acceptance criteria that are subjective → rewrite as verifiable checks
-
-Run three review perspectives (same as Phase 4 for software):
-1. **Clarity** — Is the problem real and specific? Are ACs verifiable?
-2. **Feasibility** — Is the appetite realistic given the scope?
-3. **Completeness** — Are rabbit holes named? Is the core assumption explicit?
-
-Resolve all blockers. Approve when clean.
-
-Update CR state to `SPEC_APPROVED`. Skip Phase 3 (contract impact is software-only).
-Proceed to Phase 6 (handoff).
 
 ---
 
@@ -215,34 +136,38 @@ Read `references/contract-impact-rules.md` before this phase.
 
 ---
 
-## Phase 4: Spec Review (three perspectives in sequence, shared context)
+## Phase 4: Spec Review (proportional perspectives)
 
-Once the draft is complete, review the spec through three mandatory perspectives in a single pass. Do not spawn separate agents — execute each perspective yourself in sequence, carrying full context across all three. This avoids reloading doctrine three times.
+Once the draft is complete, assess the scope of the change and decide the appropriate review depth. See `references/proportionality-rules.md` for guidance.
 
-Read the spec draft once. Then apply each perspective against it:
+**Available perspectives:**
 
-**Perspective 1 — Domain correctness:**
+**Domain correctness perspective** (domain-analyst):
 - Is the problem statement clear and complete?
 - Are all acceptance criteria testable (GIVEN/WHEN/THEN)?
 - Are there missing edge cases?
 - Are there ambiguities or vague terms?
 
-**Perspective 2 — Structural integrity:**
-- Are ports defined as interfaces, not implementations?
-- Is the dependency direction correct?
-- Are there boundary violations or missing ports?
-- Is the bounded context correctly scoped?
+**Structural integrity perspective** (sw-architect):
+- Are interfaces defined abstractly, not tied to implementations?
+- Is the dependency direction correct per the project's architecture?
+- Are there boundary violations or missing abstractions?
+- Is the scope correctly bounded?
 - Is the Contract Impact section present and accurate? (surfaces identified, dependents listed,
   compatibility decision recorded — or explicitly N/A with justification)
 
-**Perspective 3 — Security exposure:**
-- If `Praxis IsolationKey` is set: is data isolation enforced for every data access path using that key?
-- If `Praxis IsolationKey` is absent or "none": are there any implicit data ownership assumptions that need explicit access control?
-- Are all write endpoints authenticated?
+**Security exposure perspective** (security-engineer):
+- Are data access boundaries enforced where applicable?
+- Are write operations authenticated?
 - Are there injection risks or unvalidated inputs?
-- Is the security defaults section complete?
+- Is the security considerations section complete?
 
-Consolidate all findings into a single list. Apply the shared severity model from `references/review-severity-model.md`.
+**Depth decision:**
+- Isolated fix in existing code with clear intent → single-perspective review focused on the most relevant concern
+- New endpoint or feature on existing patterns → two perspectives (domain + the most relevant technical perspective)
+- New subsystem, new domain concept, cross-cutting change, or security-sensitive change → three perspectives in parallel
+
+Spawn the selected perspective agents using the Agent tool. Consolidate all findings. Apply the shared severity model from `references/review-severity-model.md`.
 
 ---
 
@@ -305,7 +230,7 @@ Stop and ask the human when:
 - A BLOCKER finding requires a scope trade-off only the human can make
 - The spec's acceptance criteria are contradictory
 
-Do not escalate for: technical pattern selection, default application, port placement, or anything the references define.
+Do not escalate for: technical pattern selection, default application, structural placement, or anything the references define.
 
 ---
 
@@ -322,3 +247,4 @@ Do not escalate for: technical pattern selection, default application, port plac
 | `references/evidence-and-citation-rules.md` | Evidence format for review findings |
 | `references/contract-impact-rules.md` | Contract surface detection, breaking vs additive rules, consumer CR format |
 | `references/backlog-persistence-rules.md` | Backlog write protocol for consumer CR creation |
+| `references/proportionality-rules.md` | Scope assessment and depth calibration |
