@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # install.sh — Installs SDM skills into a target project (legacy path)
-# For plugin-based install, use: /plugin marketplace add <path> && /plugin install sdm@comocom
+# For plugin-based install, use: /plugin marketplace add <path> && /plugin install sdm@whosangelflores
 #
 # Usage: ./install.sh /path/to/your/project
 # What it does: copies skills/ into <project>/.claude/skills/

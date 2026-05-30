@@ -8,29 +8,13 @@ Works with **Claude Code** and **OpenCode** (same SKILL.md format). Stack agnost
 
 ## Installation
 
-### Claude Code
-
-```bash
-# Add the marketplace (once per machine)
-/plugin marketplace add ~/Downloads/sdm-hackathon
-
-# Install the plugin (once per machine)
-/plugin install sdm@comocom
-```
-
-### OpenCode
-
 Copy the `skills/` folder into your project:
 
 ```bash
-cp -r skills/ .opencode/skills/
+cp -r skills/ .claude/skills/
 ```
 
-Or globally:
-
-```bash
-cp -r skills/ ~/.config/opencode/skills/
-```
+That's it. Open Claude Code or OpenCode in your project and the `/plan` and `/build` commands are available immediately.
 
 ---
 
