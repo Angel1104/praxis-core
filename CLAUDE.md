@@ -1,12 +1,11 @@
-# SDM Core — Source Repository
+# Praxis Core — Source Repository
 
-This is the SDM skill pack source repo. It is NOT a consumer project.
+This is the Praxis skill pack source repo. It is NOT a consumer project.
 
 ## What this repo is
 
-SDM (Spec-Driven Development) is a lifecycle methodology for engineering changes.
-This repo contains the skill definitions and doctrine that get packaged and distributed
-as the `sdm` Claude Code plugin.
+Praxis is a lightweight methodology for AI-assisted development.
+This repo contains the skill definitions and doctrine distributed as the Praxis hackathon pack.
 
 ## Structure
 
@@ -14,7 +13,7 @@ as the `sdm` Claude Code plugin.
 skills/           — skill definitions (SKILL.md + references/ per skill)
 doctrine/         — canonical doctrine files (single source of truth)
 .claude-plugin/   — plugin manifest (marketplace.json)
-install.sh        — copies skills/ into a target project's .claude/skills/ (legacy path)
+install.sh        — copies skills/ into a target project's .claude/skills/
 README.md         — end-user documentation
 ```
 
@@ -24,21 +23,12 @@ README.md         — end-user documentation
 - To change a doctrine rule: edit `doctrine/<rule>.md`, then sync the change to all `skills/*/references/<rule>.md` copies via `sync-doctrine.sh`
 - To add a new skill: create `skills/<name>/SKILL.md` + copy relevant doctrine files into `skills/<name>/references/`
 
-## Lifecycle skills
+## Skills
 
-| Skill | Stage |
+| Skill | What it does |
 |---|---|
-| `/intake` | 1 — Intake |
-| `/spec` | 2 — Spec |
-| `/plan` | 3 — Plan |
-| `/build` | 4 — Build |
-| `/review` | 5 — Review |
-| `/close` | 6 — Close |
-| `/cr` | Automated pipeline (2–6) |
-
-## Specialist skills
-
-`/sw-architect`, `/domain-analyst`, `/security-engineer`, `/engineer`, `/qa-engineer`
+| `/plan` | Understands the request, asks ≤3 questions, produces a wave-structured plan |
+| `/build` | Reads the plan, implements wave by wave, updates the file when done |
 
 ## Testing changes
 

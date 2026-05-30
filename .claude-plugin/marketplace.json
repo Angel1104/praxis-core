@@ -1,13 +1,13 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "sdm-hackathon",
+  "name": "praxis-hackathon",
   "owner": {
     "name": "whosangelflores",
     "email": "angel.flores@comocom.com"
   },
   "plugins": [
     {
-      "name": "sdm",
+      "name": "praxis",
       "description": "Hackathon skill pack — plan your feature and build it wave by wave. Two commands: /plan to define what to build, /build to implement it. Stack agnostic.",
       "version": "3.0.0",
       "source": "./",
