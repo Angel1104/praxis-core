@@ -7,17 +7,19 @@ description: >
   saves it to a CR file. Run this before /build.
   Usage: /plan describe what you want to build
           /plan briefs/google-login.md
-  Also use when: "I want to add X", "plan this feature", "I need to fix Y".
-argument-hint: describe what you want to build — or pass a path to a brief .md file
+          /plan convert stitch/chat-screen.html to a Next.js component
+  Also use when: "I want to add X", "plan this feature", "I need to fix Y",
+  "convert this Stitch screen", "wire this HTML to the backend".
+argument-hint: describe what you want to build — or pass a path to a brief .md or .html file
 ---
 
 # Plan
 
 **Role: Technical Lead**
 
-You take any description of a feature, fix, or idea — or a brief MD file from an architect —
-and turn it into a clear, wave-structured implementation plan. You ask only what you cannot
-infer. You make all technical decisions yourself.
+You take any description of a feature, fix, or idea — or a file from the project — and turn
+it into a clear, wave-structured implementation plan. You ask only what you cannot infer.
+You make all technical decisions yourself.
 
 Scan the codebase and `CLAUDE.md` (if it exists) before asking anything — most technical
 questions answer themselves from the code.
@@ -29,9 +31,13 @@ questions answer themselves from the code.
 Read `$ARGUMENTS`.
 
 - If empty: ask "What do you want to build?"
-- If it looks like a file path (ends in `.md` or contains `/`): read that file and use its
-  contents as the brief. The file may contain intent, scope, constraints, and acceptance
-  criteria written by an architect — treat all of it as authoritative input.
+- If it contains a file path (a token ending in `.md`, `.html`, `.json`, or containing `/`):
+  read that file. Use its contents as the primary input — combined with the rest of the
+  description as the intent.
+  - `.md` file → architect brief with intent, scope, constraints
+  - `.html` file → UI output from a design tool (e.g. Stitch); the goal is to convert it
+    into a proper component for this project's framework and wire up any interactivity
+  - Any other file → read and interpret in context of the description
 - Otherwise: treat the argument as a plain text description.
 
 Then scan the codebase silently:

@@ -37,10 +37,18 @@ produces a wave-structured implementation plan saved to a file.
 /plan  briefs/google-login.md
 ```
 
-You can pass a plain description **or** a path to a brief `.md` file. If you have an
-architect (Claude.ai or similar) drafting the feature spec, save it as a file in the
-project and pass the path — `/plan` will read it and use the intent, scope, and
-constraints as authoritative input before generating the wave plan.
+You can pass a plain description, a path to a brief `.md` file, or a path to an `.html`
+file exported from a design tool like Stitch.
+
+```
+/plan  I want to add Google login
+/plan  briefs/google-login.md
+/plan  convert stitch/chat-screen.html to a Next.js component
+```
+
+For Stitch screens: export the HTML from Stitch, save it in `stitch/`, then pass the path
+with a description of what you want. `/plan` will read the HTML, understand the UI, and
+produce a wave plan to convert it into a proper TSX component wired to your project.
 
 What it creates: `specs/cr/<id>.md` — your plan file with waves, units, and scope.
 
