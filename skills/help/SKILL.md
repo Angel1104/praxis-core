@@ -31,24 +31,21 @@ Works with **Claude Code**, **OpenCode**, and **Antigravity**.
 Tell Praxis what you want. It scans your codebase, asks at most 3 questions, then
 produces a wave-structured implementation plan saved to a file.
 
+**Plain description:**
 ```
 /plan  I want to add Google login
 /plan  Fix the bug where users can see each other's data
+```
+
+**Architect brief (MD file):**
+```
 /plan  briefs/google-login.md
 ```
 
-You can pass a plain description, a path to a brief `.md` file, or a path to an `.html`
-file exported from a design tool like Stitch.
-
+**Stitch screen (folder with code.html + DESIGN.md + screenshot):**
 ```
-/plan  I want to add Google login
-/plan  briefs/google-login.md
-/plan  convert stitch/chat-screen.html to a Next.js component
+/plan  convert stitch/chat-screen to a Next.js page
 ```
-
-For Stitch screens: export the HTML from Stitch, save it in `stitch/`, then pass the path
-with a description of what you want. `/plan` will read the HTML, understand the UI, and
-produce a wave plan to convert it into a proper TSX component wired to your project.
 
 What it creates: `specs/cr/<id>.md` — your plan file with waves, units, and scope.
 
@@ -73,9 +70,9 @@ A wave is a group of implementation units that can be built independently — no
 a wave depends on another unit in the same wave.
 
 ```
-Wave 1: User model, Auth middleware    ← built independently, no waiting
-Wave 2: Login endpoint                 ← needs Wave 1 first
-Wave 3: Frontend form                  ← needs Wave 2 first
+Wave 1: Tailwind tokens, font setup    ← independent, no waiting
+Wave 2: Layout component               ← needs Wave 1 first
+Wave 3: Interactive input wiring       ← needs Wave 2 first
 ```
 
 `/build` works through waves in order. Within each wave it implements all units before
@@ -94,20 +91,17 @@ specs/cr/
 
 ---
 
-## Typical flow
+## Stitch workflow
 
-```
-/plan  I want to add file uploads, max 5MB, images only
-       → asks 1-2 questions if needed
-       → creates specs/cr/260315-142300.md
-       → prints: "Run: /build 260315-142300"
+1. Design your screen at [stitch.withgoogle.com](https://stitch.withgoogle.com)
+2. Download the ZIP — it contains `code.html`, `DESIGN.md`, and a screenshot
+3. Extract into `stitch/<screen-name>/` in your project
+4. Run: `/plan convert stitch/<screen-name> to a Next.js page`
+5. Run: `/build <cr-id>`
 
-/build 260315-142300
-       → Wave 1: storage service, validator
-       → Wave 2: upload endpoint
-       → Wave 3: frontend component
-       → updates the plan file with build results
-```
+Praxis reads all three files: `DESIGN.md` for the design system (colors, fonts, rules),
+`code.html` for structure and tokens, and knows the screenshot is the visual target.
+It produces waves: tokens → TSX components → interactivity wiring.
 
 ---
 

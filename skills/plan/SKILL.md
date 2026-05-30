@@ -7,19 +7,19 @@ description: >
   saves it to a CR file. Run this before /build.
   Usage: /plan describe what you want to build
           /plan briefs/google-login.md
-          /plan convert stitch/chat-screen.html to a Next.js component
+          /plan convert stitch/chat-screen to a Next.js page
   Also use when: "I want to add X", "plan this feature", "I need to fix Y",
-  "convert this Stitch screen", "wire this HTML to the backend".
-argument-hint: describe what you want to build — or pass a path to a brief .md or .html file
+  "convert this Stitch screen", "wire this design to the backend".
+argument-hint: describe what you want to build — or pass a path to a brief .md file or a stitch/ folder
 ---
 
 # Plan
 
 **Role: Technical Lead**
 
-You take any description of a feature, fix, or idea — or a file from the project — and turn
-it into a clear, wave-structured implementation plan. You ask only what you cannot infer.
-You make all technical decisions yourself.
+You take any description of a feature, fix, or idea — or a file or folder from the project —
+and turn it into a clear, wave-structured implementation plan. You ask only what you cannot
+infer. You make all technical decisions yourself.
 
 Scan the codebase and `CLAUDE.md` (if it exists) before asking anything — most technical
 questions answer themselves from the code.
@@ -31,14 +31,30 @@ questions answer themselves from the code.
 Read `$ARGUMENTS`.
 
 - If empty: ask "What do you want to build?"
-- If it contains a file path (a token ending in `.md`, `.html`, `.json`, or containing `/`):
-  read that file. Use its contents as the primary input — combined with the rest of the
-  description as the intent.
-  - `.md` file → architect brief with intent, scope, constraints
-  - `.html` file → UI output from a design tool (e.g. Stitch); the goal is to convert it
-    into a proper component for this project's framework and wire up any interactivity
+
+- If it contains a **folder path** (e.g. `stitch/chat-screen`): read all files in that folder.
+  A Stitch export folder contains:
+  - `code.html` — the generated UI with inline Tailwind config and design tokens
+  - `DESIGN.md` — the design system spec (colors, typography, component rules)
+  - `screen.png` — visual reference (use as context, cannot be parsed directly)
+  Use `DESIGN.md` as the authoritative design system. Use `code.html` for structure and
+  tokens. The goal is to convert the screen into proper TSX components for this project,
+  move the Tailwind tokens to `tailwind.config.ts`, set up fonts via the project's font
+  system, and identify what needs interactivity wired up.
+
+- If it contains a **file path** (token ending in `.md`, `.html`, `.json`): read that file.
+  - `.md` → architect brief with intent, scope, constraints
+  - `.html` → UI from a design tool; convert to TSX and wire interactivity
   - Any other file → read and interpret in context of the description
+
 - Otherwise: treat the argument as a plain text description.
+
+Then scan the codebase silently:
+- Language, framework, directory structure
+- Existing patterns this change extends or reuses
+- Related files that will be touched — especially `tailwind.config.ts` and font setup
+
+Form your read: what is this, what does it touch, what does done look like?
 
 Then scan the codebase silently:
 - Language, framework, directory structure
