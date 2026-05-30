@@ -20,6 +20,8 @@ directly and concisely instead of showing the full guide.
 Praxis is a two-command system that helps you build features faster and with less chaos.
 Instead of jumping straight into code, you plan first — then build wave by wave.
 
+Works with **Claude Code**, **OpenCode**, and **Antigravity**.
+
 ---
 
 ## The two commands
@@ -63,7 +65,7 @@ Wave 2: Login endpoint                 ← needs Wave 1 first
 Wave 3: Frontend form                  ← needs Wave 2 first
 ```
 
-`/build` works through waves in order. Within each wave, it implements all units before
+`/build` works through waves in order. Within each wave it implements all units before
 moving to the next. If a unit fails, it skips units that depend on it and continues
 with the rest.
 
@@ -98,7 +100,8 @@ specs/cr/
 
 ## Tips
 
-- If `/plan` produces a plan that's off, correct it before running `/build` — edit the `.md` file directly.
-- If `/build` hits something unexpected mid-wave, it will ask you what to do. Pick A, B, or C and it continues.
+- If `/plan` produces a plan that's off, edit `specs/cr/<id>.md` directly before running `/build`.
+- If `/build` hits something unexpected mid-wave, it asks you what to do — pick A, B, or C and it continues.
 - Check `specs/cr/BACKLOG.md` to see all features and their status at a glance.
-- Praxis works with any language or framework — it reads your codebase to figure out the stack.
+- Praxis reads your codebase automatically — no setup or config needed.
+- Works the same regardless of which AI agent you use: Claude Code, OpenCode, or Antigravity.

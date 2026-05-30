@@ -2,7 +2,7 @@
 # install.sh — Installs Praxis skills into a target project
 #
 # Usage: ./install.sh /path/to/your/project
-# What it does: copies skills/ into <project>/.claude/skills/
+# Supports: Claude Code, OpenCode, Antigravity
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,14 +19,18 @@ if [ ! -d "$TARGET" ]; then
   exit 1
 fi
 
-DEST="$TARGET/.claude/skills"
-mkdir -p "$DEST"
+install_to() {
+  local dest="$TARGET/$1"
+  mkdir -p "$dest"
+  cp -r "$SCRIPT_DIR/skills/"* "$dest/"
+  echo "  ✓ $1"
+}
 
-echo "Installing Praxis skills into $DEST ..."
-cp -r "$SCRIPT_DIR/skills/"* "$DEST/"
-echo "Done."
+echo "Installing Praxis skills..."
+install_to ".claude/skills"
+install_to ".opencode/skills"
+install_to ".agent/skills"
+
 echo ""
-echo "Next steps:"
-echo "  cd $TARGET"
-echo "  Open Claude Code and run:"
-echo "    /plan  describe what you want to build"
+echo "Done. Open your AI agent and run:"
+echo "  /plan  describe what you want to build"

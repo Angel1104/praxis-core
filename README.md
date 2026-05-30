@@ -2,19 +2,35 @@
 
 Two skills that give any AI coding agent a structured build process — plan your feature, implement it wave by wave.
 
-Works with **Claude Code** and **OpenCode** (same SKILL.md format). Stack agnostic.
+Works with **Claude Code**, **OpenCode**, and **Antigravity**. Stack agnostic.
 
 ---
 
 ## Installation
 
-Copy the `skills/` folder into your project:
+Run the install script from the Praxis repo into your project:
 
 ```bash
-cp -r skills/ .claude/skills/
+./install.sh /path/to/your/project
 ```
 
-That's it. Open Claude Code or OpenCode in your project and the `/plan` and `/build` commands are available immediately.
+This copies the skills into all three agent paths at once:
+
+```
+.claude/skills/     ← Claude Code
+.opencode/skills/   ← OpenCode
+.agent/skills/      ← Antigravity
+```
+
+Or manually, if you only use one agent:
+
+```bash
+cp -r skills/ .claude/skills/      # Claude Code
+cp -r skills/ .opencode/skills/    # OpenCode
+cp -r skills/ .agent/skills/       # Antigravity
+```
+
+Open your agent in the project and the `/plan` and `/build` commands are available immediately.
 
 ---
 
@@ -45,7 +61,7 @@ Wave 2: Login endpoint                 ← needs Wave 1 done first
 Wave 3: Frontend login form            ← needs Wave 2 done first
 ```
 
-This means the AI builds as much as possible without blocking on things that aren't ready yet — faster delivery, clearer progress.
+The AI builds as much as possible without blocking on things that aren't ready yet — faster delivery, clearer progress.
 
 ---
 
@@ -67,6 +83,7 @@ No extra folders, no separate spec/plan/review files. One file per feature.
 
 ```
 praxis-hackathon/
+├── install.sh
 ├── doctrine/
 │   ├── directive-execution-principle.md
 │   └── implementation-planning-rules.md
@@ -74,16 +91,18 @@ praxis-hackathon/
     ├── plan/
     │   ├── SKILL.md
     │   └── references/
-    └── build/
-        ├── SKILL.md
-        └── references/
+    ├── build/
+    │   ├── SKILL.md
+    │   └── references/
+    └── help/
+        └── SKILL.md
 ```
 
 ---
 
 ## Versioning
 
-`3.0.0` — Hackathon edition. Two skills only: `/plan` + `/build`. Wave-based execution. Minimal overhead.
+`3.0.0` — Hackathon edition. Two skills only: `/plan` + `/build`. Wave-based execution. Supports Claude Code, OpenCode, and Antigravity.
 
 `2.1.0` — Full Praxis lifecycle (6 stages) + 5 specialist skills. Stack agnostic.
 
