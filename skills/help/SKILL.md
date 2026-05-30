@@ -34,8 +34,13 @@ produces a wave-structured implementation plan saved to a file.
 ```
 /plan  I want to add Google login
 /plan  Fix the bug where users can see each other's data
-/plan  Add a dashboard page showing recent activity
+/plan  briefs/google-login.md
 ```
+
+You can pass a plain description **or** a path to a brief `.md` file. If you have an
+architect (Claude.ai or similar) drafting the feature spec, save it as a file in the
+project and pass the path — `/plan` will read it and use the intent, scope, and
+constraints as authoritative input before generating the wave plan.
 
 What it creates: `specs/cr/<id>.md` — your plan file with waves, units, and scope.
 
